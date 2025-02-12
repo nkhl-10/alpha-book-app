@@ -2,17 +2,13 @@ package com.app.jetpackcomposedemo.model
 
 import kotlinx.serialization.Serializable
 
-
 @Serializable
 data class User(
     val createdAt: String,
-    val name: String,
+    val username: String,
     val avatar: String,
     val email: String,
-    val phoneno: String,
     val password: String,
-    val address: String,
-    val contry: String,
-    val contry_code: String,
+    val bio: String,
     val id: String
 )
