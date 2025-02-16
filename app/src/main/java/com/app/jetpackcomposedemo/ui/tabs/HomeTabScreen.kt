@@ -23,7 +23,6 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.app.jetpackcomposedemo.model.Todo
 import com.app.jetpackcomposedemo.remote.api.ApiImpl
 import com.app.jetpackcomposedemo.remote.api.ApiInterface
 import com.app.jetpackcomposedemo.remote.sharedPreferences.USER
@@ -37,7 +36,7 @@ fun HomeTabScreen() {
     // Create ViewModel and API instances
     val userApi: ApiInterface = ApiImpl()
     val viewModel = remember { UserViewModel(userApi) }
-
+/*
 
     // Fetch user data once using LaunchedEffect
     LaunchedEffect(Unit) {
@@ -85,5 +84,5 @@ fun TodoItem(todo: Todo) {
             modifier = Modifier.weight(1f),
             style = TextStyle(fontSize = 12.sp)
         )
-    }
+    }*/
 }

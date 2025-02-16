@@ -3,7 +3,7 @@ package com.app.jetpackcomposedemo.model
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class LoginCredentials(
-    val email: String,
+data class LoginRequest(
+    val username: String,
     val password: String
 )

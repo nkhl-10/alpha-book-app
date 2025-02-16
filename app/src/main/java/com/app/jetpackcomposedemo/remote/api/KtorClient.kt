@@ -14,6 +14,7 @@ val json = Json {
 }
 
 object KtorClient {
+    var authToken: String? = null
     val client = HttpClient(Android) {
         install(JsonFeature) {
             serializer = KotlinxSerializer(json)

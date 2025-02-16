@@ -1,5 +1,6 @@
 package com.app.jetpackcomposedemo.ui.screen
 
+import android.util.Log
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -14,9 +15,10 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
+import androidx.compose.material.icons.filled.Visibility
+import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -38,28 +40,27 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
-import com.app.jetpackcomposedemo.model.LoginCredentials
+import com.app.jetpackcomposedemo.model.LoginRequest
 import com.app.jetpackcomposedemo.remote.api.ApiImpl
 import com.app.jetpackcomposedemo.remote.api.ApiInterface
 import com.app.jetpackcomposedemo.remote.sharedPreferences.USER
 import com.app.jetpackcomposedemo.remote.sharedPreferences.getStringData
 import com.app.jetpackcomposedemo.remote.sharedPreferences.saveBooleanData
-import com.app.jetpackcomposedemo.remote.sharedPreferences.saveStringData
 import com.app.jetpackcomposedemo.ui.navigation.NavigationItem
+import com.app.jetpackcomposedemo.ui.utils.ApiStatus
 import com.app.jetpackcomposedemo.ui.viewModel.UserViewModel
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun LoginScreen(navController:NavController) {
+fun LoginScreen(navController: NavController) {
     val userApi: ApiInterface = ApiImpl()
     val viewModel = UserViewModel(userApi)
     val context = LocalContext.current
 
     // State variables for the inputs
-    var email by remember { mutableStateOf("") }
+    var userName by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var isLoading by remember { mutableStateOf(false) }
     var errorMessage by remember { mutableStateOf<String?>(null) }
@@ -69,8 +70,7 @@ fun LoginScreen(navController:NavController) {
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .padding(16.dp),
-        contentAlignment = Alignment.Center
+            .padding(16.dp), contentAlignment = Alignment.Center
     ) {
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
@@ -80,14 +80,13 @@ fun LoginScreen(navController:NavController) {
 
             // Username input field
             OutlinedTextField(
-                value = email,
-                onValueChange = { email = it },
-                label = { Text("Email") },
+                value = userName,
+                onValueChange = { userName = it },
+                label = { Text("User Name") },
                 modifier = Modifier.fillMaxWidth(),
-                isError = errorMessage != null && email.isEmpty(),
+                isError = errorMessage != null && userName.isEmpty(),
                 singleLine = true,
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email)
-
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text)
             )
 
             Spacer(modifier = Modifier.height(16.dp))
@@ -102,19 +101,21 @@ fun LoginScreen(navController:NavController) {
                 singleLine = true,
                 visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
                 trailingIcon = {
-                    val image = if (passwordVisible) Icons.Filled.KeyboardArrowDown else Icons.Filled.KeyboardArrowUp
+                    val image =
+                        if (passwordVisible) Icons.Filled.Visibility  else Icons.Filled.VisibilityOff
                     IconButton(onClick = { passwordVisible = !passwordVisible }) {
-                        Icon(imageVector = image, contentDescription = if (passwordVisible) "Hide password" else "Show password")
+                        Icon(
+                            imageVector = image,
+                            contentDescription = if (passwordVisible) "Hide password" else "Show password"
+                        )
                     }
                 },
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password)
-
-
             )
 
             Spacer(modifier = Modifier.height(16.dp))
-            Row(modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween
+            Row(
+                modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween
             ) {
                 Text(text = "Create Account", modifier = Modifier.clickable {
                     navController.navigate(NavigationItem.Register.route)
@@ -137,32 +138,29 @@ fun LoginScreen(navController:NavController) {
             Button(
                 onClick = {
                     errorMessage = null
-                    if (email.isEmpty() || password.isEmpty()) {
+                    if (userName.isEmpty() || password.isEmpty()) {
                         errorMessage = "Please enter both username and password"
                     } else {
                         isLoading = true
                         // Simulate login process
                         MainScope().launch {
-                            delay(2000) // Simulate network delay
                             isLoading = false
-                            val loginData = viewModel.loginUser(LoginCredentials(email, password))
-                                if (loginData != null){
-                                    context.saveBooleanData(USER.UserIsLogged.name,true)
-                                    context.saveStringData(USER.USER_NAME.name,loginData.name)
-                                    context.saveStringData(USER.USER_ID.name,loginData.id)
-                                    navController.navigate(NavigationItem.Home.createRoute(context.getStringData(USER.USER_ID.name,"0").toInt())) {
-                                        popUpTo(NavigationItem.Login.route) { inclusive = true }
-                                    }
-                                }else{
-                                    isLoading = false
-                                    errorMessage = "Invalid credentials"
+                            val response = viewModel.loginUser(LoginRequest(userName, password))
+                            Log.i("TAG", "LoginScreenRes:$response ")
+                            if (response.status == ApiStatus.SUCCESS.code) {
+                                context.saveBooleanData(USER.UserIsLogged.name, true)
+                                navController.navigate(NavigationItem.Home.route) {
+                                    popUpTo(NavigationItem.Login.route) { inclusive = true }
                                 }
+                            } else {
+                                isLoading = false
+                                errorMessage = response.message
+                            }
 
 
                         }
                     }
-                },
-                modifier = Modifier.fillMaxWidth()
+                }, modifier = Modifier.fillMaxWidth()
             ) {
                 Text(text = "Login", style = TextStyle(fontSize = 18.sp))
             }

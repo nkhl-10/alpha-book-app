@@ -36,7 +36,7 @@ fun SplashScreen(navController: NavController) {
         val isLogged = context.getBooleanData(USER.UserIsLogged.name,false)
 
         if (isLogged){
-            navController.navigate(NavigationItem.Home.createRoute(context.getStringData(USER.USER_ID.name,"0").toInt())) {
+            navController.navigate(NavigationItem.Home.route) {
                 popUpTo(NavigationItem.Splash.route) { inclusive = true }
             }
         }else{

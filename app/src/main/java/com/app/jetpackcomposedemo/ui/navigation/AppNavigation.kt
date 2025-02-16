@@ -17,17 +17,19 @@ import com.app.jetpackcomposedemo.ui.screen.SplashScreen
 fun AppNavHost(navController: NavHostController, startDestination: String = NavigationItem.Splash.route) {
     NavHost(navController = navController, startDestination = startDestination) {
 
-        composable(
+     /*   composable(
             route = NavigationItem.Home.route+  "/{userId}",
             arguments = listOf(navArgument("userId") { type = NavType.IntType })
         ) {
             val userId = it.arguments?.getInt(USER.USER_ID.name)
             HomeScreen(navController)
-        }
+        }*/
+
+        composable(NavigationItem.Home.route){ HomeScreen(navController) }
 
         composable(NavigationItem.Login.route){LoginScreen(navController)}
 
-        composable(NavigationItem.Profile.route+"/{userId}") { ProfileScreen(navController ) }
+        composable(NavigationItem.Profile.route) { ProfileScreen(navController ) }
 
         composable(NavigationItem.Splash.route) { SplashScreen(navController) }
 

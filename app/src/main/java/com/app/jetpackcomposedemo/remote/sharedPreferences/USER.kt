@@ -5,5 +5,6 @@ enum class USER {
     USER_NAME,
     USER_EMAIL,
     USER_PHONE_NO,
-    USER_ID
+    USER_ID,
+    TOKEN
 }
