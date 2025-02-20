@@ -5,6 +5,7 @@ package com.app.jetpackcomposedemo.ui.utils
 const val BASE_URL ="http://192.168.171.172:8000/api/"
 const val REGISTER_URL = "register"
 const val LOGIN_URL = "login"
+const val BOOKS_URL = "books"
 
 
 enum class ApiStatus(val code: Int, val message: String) {

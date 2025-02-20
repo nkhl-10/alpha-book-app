@@ -6,6 +6,7 @@ sealed class NavigationItem(val route: String) {
     object Profile : NavigationItem(Screen.PROFILE.name)
     object Splash : NavigationItem(Screen.SPLASH.name)
     object Register : NavigationItem(Screen.REGISTER.name)
+    object BookDetails : NavigationItem(Screen.BOOK_DETAILS.name)
 }
 
 

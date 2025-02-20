@@ -1,5 +1,8 @@
 package com.app.jetpackcomposedemo.remote.api
 
+import android.content.Context
+import com.app.jetpackcomposedemo.remote.sharedPreferences.USER
+import com.app.jetpackcomposedemo.remote.sharedPreferences.getStringData
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.android.Android
 import io.ktor.client.features.DefaultRequest
@@ -14,7 +17,6 @@ val json = Json {
 }
 
 object KtorClient {
-    var authToken: String? = null
     val client = HttpClient(Android) {
         install(JsonFeature) {
             serializer = KotlinxSerializer(json)

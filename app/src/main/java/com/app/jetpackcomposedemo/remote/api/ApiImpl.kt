@@ -1,14 +1,15 @@
 package com.app.jetpackcomposedemo.remote.api
 
+import android.content.Context
 import android.util.Log
 import com.app.jetpackcomposedemo.model.ApiResponse
 import com.app.jetpackcomposedemo.model.Book
-import com.app.jetpackcomposedemo.model.BookImage
 import com.app.jetpackcomposedemo.model.LoginRequest
 import com.app.jetpackcomposedemo.model.TokenResponse
 import com.app.jetpackcomposedemo.model.Transaction
 import com.app.jetpackcomposedemo.model.User
 import com.app.jetpackcomposedemo.ui.utils.ApiStatus
+import com.app.jetpackcomposedemo.ui.utils.BOOKS_URL
 import com.app.jetpackcomposedemo.ui.utils.LOGIN_URL
 import com.app.jetpackcomposedemo.ui.utils.REGISTER_URL
 import io.ktor.client.call.receive
@@ -16,6 +17,8 @@ import io.ktor.client.features.ClientRequestException
 import kotlinx.serialization.json.Json
 import io.ktor.client.statement.*
 import kotlinx.serialization.SerializationException
+import kotlinx.serialization.json.JsonArray
+import kotlinx.serialization.json.JsonObject
 
 class ApiImpl : BaseApiService(), ApiInterface {
 
@@ -30,12 +33,12 @@ class ApiImpl : BaseApiService(), ApiInterface {
         }
     }
 
-    override suspend fun login(credentials: LoginRequest):ApiResponse<TokenResponse>  {
-       /* val response: HttpResponse = postRequest(LOGIN_URL, credentials)
-        val statusCode = response.status.value
-        val responseBody: String = response.receive()
-        val apiResponse = Json.decodeFromString<ApiResponse<TokenResponse>>(responseBody)
-        return apiResponse.copy(status = statusCode) // Attach status code*/
+    override suspend fun login(credentials: LoginRequest): ApiResponse<TokenResponse> {
+        /* val response: HttpResponse = postRequest(LOGIN_URL, credentials)
+         val statusCode = response.status.value
+         val responseBody: String = response.receive()
+         val apiResponse = Json.decodeFromString<ApiResponse<TokenResponse>>(responseBody)
+         return apiResponse.copy(status = statusCode) // Attach status code*/
         return safeApiCall {
             postRequest(LOGIN_URL, credentials)
         }
@@ -45,19 +48,24 @@ class ApiImpl : BaseApiService(), ApiInterface {
         return getRequest("users")
     }
 
-    override suspend fun getBooks(): List<Book> {
-        return getRequest("books")
+    override suspend fun getBooks(): ApiResponse<List<Book>> {
+        return safeApiCall {
+            getRequest(BOOKS_URL)
+        }
+    }
+
+    override suspend fun getBooks(bookId: Int): ApiResponse<List<Book>> {
+        return safeApiCall {
+            getRequest("$BOOKS_URL/$bookId")
+        }
     }
 
     override suspend fun getTransactions(): List<Transaction> {
         return getRequest("transactions")
     }
 
-    override suspend fun getBookImages(): List<BookImage> {
-        return getRequest("book_images")
-    }
-}
 
+}
 
 
 suspend inline fun <reified T> safeApiCall(apiCall: () -> HttpResponse): ApiResponse<T> {
@@ -70,9 +78,13 @@ suspend inline fun <reified T> safeApiCall(apiCall: () -> HttpResponse): ApiResp
         Log.i("TAG", "Raw Response: $responseBody")
 
         return try {
-            // ✅ Ensure JSON response structure is correct before parsing
-            val apiResponse = Json.decodeFromString<ApiResponse<T>>(responseBody)
-            apiResponse.copy(status = statusCode)
+            val jsonElement = Json.parseToJsonElement(responseBody)
+            val data: T? = when (jsonElement) {
+                is JsonArray -> Json.decodeFromString(responseBody)
+                is JsonObject -> Json.decodeFromString<ApiResponse<T>>(responseBody).data
+                else -> throw SerializationException("Unexpected JSON format")
+            }
+            ApiResponse(status = statusCode, data = data, message = "Success")
         } catch (e: SerializationException) {
             Log.e("TAG", "Serialization Error: ${e.message}")
             ApiResponse(status = statusCode, message = responseBody, data = null)

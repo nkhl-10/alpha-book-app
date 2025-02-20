@@ -43,9 +43,11 @@ import androidx.navigation.NavController
 import com.app.jetpackcomposedemo.model.LoginRequest
 import com.app.jetpackcomposedemo.remote.api.ApiImpl
 import com.app.jetpackcomposedemo.remote.api.ApiInterface
+import com.app.jetpackcomposedemo.remote.api.KtorClient
 import com.app.jetpackcomposedemo.remote.sharedPreferences.USER
 import com.app.jetpackcomposedemo.remote.sharedPreferences.getStringData
 import com.app.jetpackcomposedemo.remote.sharedPreferences.saveBooleanData
+import com.app.jetpackcomposedemo.remote.sharedPreferences.saveStringData
 import com.app.jetpackcomposedemo.ui.navigation.NavigationItem
 import com.app.jetpackcomposedemo.ui.utils.ApiStatus
 import com.app.jetpackcomposedemo.ui.viewModel.UserViewModel
@@ -55,9 +57,9 @@ import kotlinx.coroutines.launch
 
 @Composable
 fun LoginScreen(navController: NavController) {
+    val context = LocalContext.current
     val userApi: ApiInterface = ApiImpl()
     val viewModel = UserViewModel(userApi)
-    val context = LocalContext.current
 
     // State variables for the inputs
     var userName by remember { mutableStateOf("") }
@@ -102,7 +104,7 @@ fun LoginScreen(navController: NavController) {
                 visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
                 trailingIcon = {
                     val image =
-                        if (passwordVisible) Icons.Filled.Visibility  else Icons.Filled.VisibilityOff
+                        if (passwordVisible) Icons.Filled.Visibility else Icons.Filled.VisibilityOff
                     IconButton(onClick = { passwordVisible = !passwordVisible }) {
                         Icon(
                             imageVector = image,
@@ -149,6 +151,7 @@ fun LoginScreen(navController: NavController) {
                             Log.i("TAG", "LoginScreenRes:$response ")
                             if (response.status == ApiStatus.SUCCESS.code) {
                                 context.saveBooleanData(USER.UserIsLogged.name, true)
+                                context.saveStringData(USER.TOKEN.name, response.data?.token.toString())
                                 navController.navigate(NavigationItem.Home.route) {
                                     popUpTo(NavigationItem.Login.route) { inclusive = true }
                                 }
