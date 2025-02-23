@@ -5,11 +5,11 @@ plugins {
 }
 
 android {
-    namespace = "com.app.jetpackcomposedemo"
+    namespace = "com.app.alpha_book"
     compileSdk = 35
 
     defaultConfig {
-        applicationId = "com.app.jetpackcomposedemo"
+        applicationId = "com.app.alpha_book"
         minSdk = 28
         targetSdk = 35
         versionCode = 1

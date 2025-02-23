@@ -2,7 +2,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
 <uses-permission android:name="android.permission.INTERNET"/>
     <application
-        android:name=".base.MyApp"
+        android:name="com.app.alpha_book.base.MyApp"
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
         android:fullBackupContent="@xml/backup_rules"
@@ -10,12 +10,12 @@
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
-        android:theme="@style/Theme.JetpackComposeDemo"
+        android:theme="@style/Theme.alpha_book"
         android:networkSecurityConfig="@xml/network_security_config">
         <activity
-            android:name=".base.MainActivity"
+            android:name="com.app.alpha_book.base.MainActivity"
             android:exported="true"
-            android:theme="@style/Theme.JetpackComposeDemo">
+            android:theme="@style/Theme.alpha_book">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
