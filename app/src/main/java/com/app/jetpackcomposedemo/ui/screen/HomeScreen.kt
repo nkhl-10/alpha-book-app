@@ -31,6 +31,8 @@ fun HomeScreen(mainNav: NavController) {
                 title = when (currentRoute) {
                     HomeTabItem.Home.route -> "Home"
                     HomeTabItem.Search.route -> "Search"
+                    HomeTabItem.AddBook.route -> "AddBook"
+                    HomeTabItem.Explore.route -> "Explore"
                     HomeTabItem.Profile.route -> "Profile"
                     else -> "Demo App"
                 }
