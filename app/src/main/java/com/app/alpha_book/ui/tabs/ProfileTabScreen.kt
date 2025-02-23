@@ -14,7 +14,6 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
@@ -30,6 +29,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -38,25 +38,46 @@ import com.app.alpha_book.R
 import com.app.alpha_book.model.User
 import com.app.alpha_book.remote.api.ApiImpl
 import com.app.alpha_book.remote.api.ApiInterface
+import com.app.alpha_book.remote.sharedPreferences.USER
+import com.app.alpha_book.remote.sharedPreferences.getIntData
+import com.app.alpha_book.ui.utils.ApiStatus
 import com.app.alpha_book.ui.viewModel.UserViewModel
 
 @Composable
 fun ProfileTabScreen(navController: NavController) {
+    val context = LocalContext.current
     /* Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
          Button(onClick = {
              context.clearAllData()
              navHostController.navigate(NavigationItem.Splash.route)
          }) {}*/
 //            Text(text = "Logout", style = TextStyle(fontSize = 18.sp))
+
+
+    val userApi: ApiInterface = ApiImpl()
+    val viewModel = remember { UserViewModel(userApi) }
+    val user by viewModel.userState.collectAsState()
+
+    LaunchedEffect(Unit) {
+        val id = context.getIntData(USER.ID.name, 0)
+        viewModel.getUser(id)
+    }
+
     Column(
         modifier = Modifier
             .fillMaxWidth()
             .fillMaxHeight()
     ) {
-        UserProfileCard(
-            User(0, "Nkhl", "nikboy@gmail.com", "000", "9530301242", "aaaaa", true, 0, 0)
-        )
-        BooksPager(navController)
+        if (user?.status == ApiStatus.SUCCESS.code) {
+            user?.data?.let {
+                UserProfileCard(it)
+                BooksPager(navController, it.id)
+            } ?: Text("Loading...")
+
+        } else {
+            Text(text = "Try Again!!")
+        }
+
     }
 }
 
@@ -100,13 +121,11 @@ fun UserProfileCard(user: User) {
                     textAlign = TextAlign.Center
                 )
                 Spacer(modifier = Modifier.height(6.dp))
-                user.phone?.let {
-                    Text(
-                        text = it,
-                        style = MaterialTheme.typography.titleMedium,
-                        textAlign = TextAlign.Center
-                    )
-                }
+                Text(
+                    text = user.phone ?: "Not Available Phone No",
+                    style = MaterialTheme.typography.titleMedium,
+                    textAlign = TextAlign.Center
+                )
             }
         }
 
@@ -119,14 +138,14 @@ fun UserProfileCard(user: User) {
             OutlinedButton(
                 onClick = {},
                 content = { Text("Edit Profile") },
-                modifier =  Modifier.weight(1f)
+                modifier = Modifier.weight(1f)
             )
             Spacer(modifier = Modifier.width(18.dp))
 
             OutlinedButton(
                 onClick = {},
                 content = { Text("Add Book") },
-                modifier =  Modifier.weight(1f)
+                modifier = Modifier.weight(1f)
             )
 
 
@@ -135,7 +154,7 @@ fun UserProfileCard(user: User) {
 }
 
 @Composable
-fun BooksPager(navController: NavController) {
+fun BooksPager(navController: NavController, id: Int) {
     val pagerState = rememberPagerState(pageCount = { 2 })
     val tabTitles = listOf("Your Books", "Ordered Books")
     TabRow(selectedTabIndex = pagerState.currentPage) {
@@ -157,7 +176,7 @@ fun BooksPager(navController: NavController) {
                 0 -> {
                     val bookList by viewModel.bookList.collectAsState()
 
-                    LaunchedEffect(Unit) { viewModel.getUserByBookList(10) }
+                    LaunchedEffect(Unit) { viewModel.getUserByBookList(id) }
 
                     Box(
                         modifier = Modifier
@@ -183,7 +202,7 @@ fun BooksPager(navController: NavController) {
                 1 -> {
                     val bookList by viewModel.bookList.collectAsState()
 
-                    LaunchedEffect(Unit) { viewModel.getOrderedByBookList(1) }
+                    LaunchedEffect(Unit) { viewModel.getOrderedByBookList(id) }
 
                     Box(
                         modifier = Modifier

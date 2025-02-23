@@ -41,7 +41,7 @@ import androidx.navigation.NavHostController
 import com.app.alpha_book.model.User
 import com.app.alpha_book.remote.api.ApiImpl
 import com.app.alpha_book.remote.api.ApiInterface
-import com.app.alpha_book.ui.navigation.NavigationItem
+import com.app.alpha_book.ui.navigation.ScreenNavigationItem
 import com.app.alpha_book.ui.utils.ApiStatus
 import com.app.alpha_book.ui.viewModel.UserViewModel
 import kotlinx.coroutines.MainScope
@@ -144,7 +144,7 @@ fun RegisterScreen(navController: NavHostController) {
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
                 Text(text = "Login", modifier = Modifier.clickable {
-                    navController.navigate(NavigationItem.Login.route)
+                    navController.navigate(ScreenNavigationItem.Login.route)
                 })
             }
             Spacer(modifier = Modifier.height(16.dp))
@@ -181,8 +181,8 @@ fun RegisterScreen(navController: NavHostController) {
                             val response = viewModel.createUser(user)
                             Log.i("TAG", "RegisterScreenAuth: $response")
                             if (response.status == ApiStatus.CREATED.code){
-                                navController.navigate(NavigationItem.Home.route) {
-                                    popUpTo(NavigationItem.Login.route) { inclusive = true }
+                                navController.navigate(ScreenNavigationItem.Home.route) {
+                                    popUpTo(ScreenNavigationItem.Login.route) { inclusive = true }
                                 }
                             }else{
                                 isLoading = false

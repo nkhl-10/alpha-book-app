@@ -35,7 +35,7 @@ import com.app.alpha_book.R
 import com.app.alpha_book.model.Book
 import com.app.alpha_book.remote.api.ApiImpl
 import com.app.alpha_book.remote.api.ApiInterface
-import com.app.alpha_book.ui.navigation.NavigationItem
+import com.app.alpha_book.ui.navigation.ScreenNavigationItem
 import com.app.alpha_book.ui.viewModel.UserViewModel
 
 @Composable
@@ -76,7 +76,7 @@ fun BookItems(books: Book, navController: NavController) {
             .fillMaxSize()
             .padding(4.dp)
             .clickable {
-                navController.navigate(NavigationItem.BookDetails.route+"/${books.id}")
+                navController.navigate(ScreenNavigationItem.BookDetails.route+"/${books.id}")
             },
         shape = RoundedCornerShape(6.dp),
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
@@ -91,10 +91,10 @@ fun BookItems(books: Book, navController: NavController) {
                         .crossfade(true)
                         .build(),
                     contentDescription = "Book Image",
-                    contentScale = ContentScale.Fit,
+                    contentScale = ContentScale.Crop,
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(180.dp),
+                        .height(160.dp),
                     placeholder = painterResource(id = R.drawable.ic_launcher_background),
                     error = painterResource(id = R.drawable.ic_launcher_background)
                 )
@@ -102,10 +102,10 @@ fun BookItems(books: Book, navController: NavController) {
                 Image(
                     painter = painterResource(id = R.drawable.ic_launcher_foreground), // ✅ Default placeholder
                     contentDescription = "Default Book Image",
-                    contentScale = ContentScale.Fit,
+                    contentScale = ContentScale.Crop,
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(180.dp)
+                        .height(160.dp)
                 )
             }
             Text(
@@ -119,12 +119,12 @@ fun BookItems(books: Book, navController: NavController) {
                 modifier = Modifier.padding(4.dp)
             )
             Text(
-                text = "Category ID: ${books.category?.name.toString() ?: "N/A"}",
+                text = "Category Name: ${books.category?.name.toString()}",
                 style = MaterialTheme.typography.bodyMedium,
                 modifier = Modifier.padding(4.dp)
             )
             Text(
-                text = "Location: ${books.location?.city.toString() ?: "N/A"}",
+                text = "Location: ${books.location?.city.toString()}",
                 style = MaterialTheme.typography.bodyMedium,
                 modifier = Modifier.padding(4.dp)
             )

@@ -19,7 +19,7 @@ class MainActivity : ComponentActivity() {
             AlphaBookTheme {
                 Surface(
                     modifier = Modifier.fillMaxSize().statusBarsPadding(),
-                    color = MaterialTheme.colorScheme.background
+                    color = MaterialTheme.colorScheme.background,
                 ) {
                     AppNavHost(navController = rememberNavController())
                 }

@@ -15,6 +15,7 @@ import com.app.alpha_book.ui.utils.LOGIN_URL
 import com.app.alpha_book.ui.utils.REGISTER_URL
 import com.app.alpha_book.ui.utils.USER_BY_BOOKS_URL
 import com.app.alpha_book.ui.utils.USER_BY_ORDERED_BOOKS_URL
+import com.app.alpha_book.ui.utils.USER_URL
 import io.ktor.client.call.receive
 import io.ktor.client.features.ClientRequestException
 import kotlinx.serialization.json.Json
@@ -31,14 +32,14 @@ class ApiImpl : BaseApiService(), ApiInterface {
     override suspend fun login(credentials: LoginRequest): ApiResponse<TokenResponse> =
         safeApiCall { postRequest(LOGIN_URL, credentials) }
 
-    override suspend fun getBooks(): ApiResponse<List<Book>> = safeApiCall { getRequest(BOOKS_URL) }
+    override suspend fun getBook(): ApiResponse<List<Book>> = safeApiCall { getRequest(BOOKS_URL) }
 
-    override suspend fun getBooks(bookId: Int): ApiResponse<Book> {
+    override suspend fun getBook(bookId: Int): ApiResponse<Book> {
         val response: HttpResponse = getRequest("$BOOKS_URL/$bookId")
         val statusCode = response.status.value
         val responseBody: String = response.receive()
 
-        Log.i("API_CALL", "Response Status: $statusCode")
+        Log.i("API_CALL", "Response Status:$bookId :: $statusCode")
         Log.i("API_CALL", "Raw Response: $responseBody")
 
         return try {
@@ -54,6 +55,30 @@ class ApiImpl : BaseApiService(), ApiInterface {
         }
     }
 
+    override suspend fun getUser(userId: Int): ApiResponse<User> {
+        val response: HttpResponse = getRequest("$USER_URL/$userId")
+        Log.i("API_CALL", "Raw Response: $response")
+        val statusCode = response.status.value
+        Log.i("API_CALL", "Raw Response: $statusCode")
+        val responseBody: String = response.receive()
+
+        Log.i("API_CALL", "Response Status:$userId :: $statusCode")
+        Log.i("API_CALL", "Raw Response: $responseBody")
+
+        return try {
+            val book: User = Json.decodeFromString(responseBody) // Deserialize correctly
+            ApiResponse(status = statusCode, data = book, message = "Success")
+        } catch (e: SerializationException) {
+            Log.e("API_CALL", "Serialization Error: ${e.message}")
+            ApiResponse(
+                status = statusCode,
+                data = null,
+                message = "Serialization Error: ${e.message}"
+            )
+        }
+    }
+
+
     override suspend fun searchBooks(query: String): ApiResponse<List<Book>> =
         safeApiCall { getRequest("$BOOKS_SEARCH_URL?q=$query") }
 
@@ -63,6 +88,10 @@ class ApiImpl : BaseApiService(), ApiInterface {
 
     override suspend fun getCategories(): ApiResponse<List<Category>> = safeApiCall {
         getRequest(CATEGORIES_URL)
+    }
+
+    override suspend fun getCategories(categoryId: Int): ApiResponse<List<Book>> = safeApiCall {
+        getRequest("$CATEGORIES_URL/$categoryId")
     }
 
     override suspend fun getCategoriesByBooks(categoryId: Int): ApiResponse<List<Book>> =

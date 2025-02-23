@@ -1,5 +1,6 @@
 package com.app.alpha_book.ui.tabs
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -25,6 +26,7 @@ import androidx.navigation.NavController
 import com.app.alpha_book.model.Category
 import com.app.alpha_book.remote.api.ApiImpl
 import com.app.alpha_book.remote.api.ApiInterface
+import com.app.alpha_book.ui.navigation.ScreenNavigationItem
 import com.app.alpha_book.ui.viewModel.UserViewModel
 
 @Composable
@@ -55,12 +57,18 @@ fun CategoryList(list: List<Category>, navController: NavController) {
             Card(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(16.dp),
-                elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
+                    .padding(16.dp)
+                    .clickable {
+                        navController.navigate(
+                            ScreenNavigationItem.CategoryDetails.route +
+                                    "/${it.name}" + "/${it.id}"
+                        )
+                    },
+                elevation = CardDefaults.cardElevation(defaultElevation = 8.dp),
             ) {
                 Text(
                     text = it.name ?: "N/A",
-                    modifier = Modifier.padding(10.dp),
+                    modifier = Modifier.padding(16.dp),
                     style = MaterialTheme.typography.titleLarge,
                     textAlign = TextAlign.Center
                 )

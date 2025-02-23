@@ -18,6 +18,18 @@ fun Context.saveStringData(key: String, value: String) {
         apply() // Apply asynchronously
     }
 }
+fun Context.saveIntData(key: String, value: Int) {
+    val sharedPreferences = getPreferences()
+    with(sharedPreferences.edit()) {
+        putInt(key, value)
+        apply() // Apply asynchronously
+    }
+}
+
+fun Context.getIntData(key: String, defaultValue: Int): Int {
+    val sharedPreferences = getPreferences()
+    return sharedPreferences.getInt(key, defaultValue)
+}
 fun Context.saveBooleanData(key: String, value: Boolean) {
     val sharedPreferences = getPreferences()
     with(sharedPreferences.edit()) {

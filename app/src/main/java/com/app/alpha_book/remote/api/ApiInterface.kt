@@ -12,15 +12,19 @@ interface ApiInterface {
 
     suspend fun login(credentials: LoginRequest): ApiResponse<TokenResponse>
 
-    suspend fun getBooks(): ApiResponse<List<Book>>
+    suspend fun getBook(): ApiResponse<List<Book>>
 
-    suspend fun getBooks(bookId: Int): ApiResponse<Book>
+    suspend fun getBook(bookId: Int): ApiResponse<Book>
+
+    suspend fun getUser(userId: Int): ApiResponse<User>
 
     suspend fun searchBooks(query: String): ApiResponse<List<Book>>
 
     suspend fun buyBook(bookId: Int): ApiResponse<Book>
 
     suspend fun getCategories(): ApiResponse<List<Category>>
+
+    suspend fun getCategories(categoryId: Int): ApiResponse<List<Book>>
 
     suspend fun getCategoriesByBooks(categoryId: Int): ApiResponse<List<Book>>
 

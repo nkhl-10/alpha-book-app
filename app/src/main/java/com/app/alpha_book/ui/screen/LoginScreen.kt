@@ -43,8 +43,9 @@ import com.app.alpha_book.remote.api.ApiImpl
 import com.app.alpha_book.remote.api.ApiInterface
 import com.app.alpha_book.remote.sharedPreferences.USER
 import com.app.alpha_book.remote.sharedPreferences.saveBooleanData
+import com.app.alpha_book.remote.sharedPreferences.saveIntData
 import com.app.alpha_book.remote.sharedPreferences.saveStringData
-import com.app.alpha_book.ui.navigation.NavigationItem
+import com.app.alpha_book.ui.navigation.ScreenNavigationItem
 import com.app.alpha_book.ui.utils.ApiStatus
 import com.app.alpha_book.ui.viewModel.UserViewModel
 import kotlinx.coroutines.MainScope
@@ -115,7 +116,7 @@ fun LoginScreen(navController: NavController) {
                 modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween
             ) {
                 Text(text = "Create Account", modifier = Modifier.clickable {
-                    navController.navigate(NavigationItem.Register.route)
+                    navController.navigate(ScreenNavigationItem.Register.route)
                 })
                 Text(text = "Forget Password")
             }
@@ -145,11 +146,15 @@ fun LoginScreen(navController: NavController) {
                             val response = viewModel.loginUser(LoginRequest(userName, password))
                             Log.i("TAG", "LoginScreenRes:$response ")
                             if (response.status == ApiStatus.SUCCESS.code) {
-                                context.saveBooleanData(USER.UserIsLogged.name, true)
-                                context.saveStringData(USER.TOKEN.name, response.data?.token.toString())
-                                navController.navigate(NavigationItem.Home.route) {
-                                    popUpTo(NavigationItem.Login.route) { inclusive = true }
+                                response.data?.apply {
+                                    context.saveBooleanData(USER.UserIsLogged.name, true)
+                                    context.saveIntData(USER.ID.name, id!!)
+                                    context.saveStringData(USER.TOKEN.name, token.toString())
+                                    navController.navigate(ScreenNavigationItem.Home.route) {
+                                        popUpTo(ScreenNavigationItem.Login.route) { inclusive = true }
+                                    }
                                 }
+
                             } else {
                                 isLoading = false
                                 errorMessage = response.message

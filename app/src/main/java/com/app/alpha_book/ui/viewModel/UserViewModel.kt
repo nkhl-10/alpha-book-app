@@ -26,6 +26,9 @@ class UserViewModel(private val api: ApiInterface) : ViewModel() {
     private val _bookDetailsState = MutableStateFlow<ApiResponse<Book>?>(null)
     val bookDetailsState: StateFlow<ApiResponse<Book>?> = _bookDetailsState
 
+    private val _userState = MutableStateFlow<ApiResponse<User>?>(null)
+    val userState: StateFlow<ApiResponse<User>?> = _userState
+
     suspend fun createUser(newUser: User): ApiResponse<User> = api.register(newUser)
 
     suspend fun loginUser(cred: LoginRequest): ApiResponse<TokenResponse> = api.login(cred)
@@ -34,7 +37,7 @@ class UserViewModel(private val api: ApiInterface) : ViewModel() {
     fun getBookList() {
         viewModelScope.launch {
             try {
-                val response = api.getBooks()
+                val response = api.getBook()
                 _bookListState.value = response.data
                 Log.i("DATAAPI", "Book List: $response")
             } catch (e: Exception) {
@@ -51,6 +54,17 @@ class UserViewModel(private val api: ApiInterface) : ViewModel() {
                 _categoryListState.value = response.data
             } catch (e: Exception) {
                 _categoryListState.value = emptyList()
+            }
+        }
+    }
+
+    fun getCategoryList(categoryId: Int) {
+        viewModelScope.launch {
+            try {
+                val response = api.getCategories(categoryId)
+                _bookListState.value = response.data
+            } catch (e: Exception) {
+                _bookListState.value = emptyList()
             }
         }
     }
@@ -82,10 +96,21 @@ class UserViewModel(private val api: ApiInterface) : ViewModel() {
     fun getBookList(bookId: Int) {
         viewModelScope.launch {
             try {
-                val response = api.getUserByOrderedBooks(bookId)
-                _bookListState.value = response.data
+                val response = api.getBook(bookId)
+                _bookDetailsState.value = response
             } catch (e: Exception) {
                 _bookListState.value = null
+            }
+        }
+    }
+
+    fun getUser(userId: Int) {
+        viewModelScope.launch {
+            try {
+                val response = api.getUser(userId)
+                _userState.value = response
+            } catch (e: Exception) {
+                _userState.value = null
             }
         }
     }

@@ -16,7 +16,7 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.app.alpha_book.remote.sharedPreferences.USER
 import com.app.alpha_book.remote.sharedPreferences.getBooleanData
-import com.app.alpha_book.ui.navigation.NavigationItem
+import com.app.alpha_book.ui.navigation.ScreenNavigationItem
 import kotlinx.coroutines.delay
 
 @Composable
@@ -34,12 +34,12 @@ fun SplashScreen(navController: NavController) {
         val isLogged = context.getBooleanData(USER.UserIsLogged.name,false)
 
         if (isLogged){
-            navController.navigate(NavigationItem.Home.route) {
-                popUpTo(NavigationItem.Splash.route) { inclusive = true }
+            navController.navigate(ScreenNavigationItem.Home.route) {
+                popUpTo(ScreenNavigationItem.Splash.route) { inclusive = true }
             }
         }else{
-            navController.navigate(NavigationItem.Login.route){
-                popUpTo(NavigationItem.Splash.route){inclusive=true}
+            navController.navigate(ScreenNavigationItem.Login.route){
+                popUpTo(ScreenNavigationItem.Splash.route){inclusive=true}
             }
         }
 
