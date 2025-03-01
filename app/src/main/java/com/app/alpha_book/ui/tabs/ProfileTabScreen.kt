@@ -1,6 +1,6 @@
 package com.app.alpha_book.ui.tabs
 
-import androidx.compose.foundation.Image
+import android.util.Log
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -29,11 +29,13 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import coil.compose.AsyncImage
 import com.app.alpha_book.R
 import com.app.alpha_book.model.User
 import com.app.alpha_book.remote.api.ApiImpl
@@ -96,13 +98,15 @@ fun UserProfileCard(user: User) {
                 .fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Image(
-                painter = painterResource(id = R.drawable.ic_launcher_foreground),
-                contentDescription = "User Avatar",
-                modifier = Modifier
+            AsyncImage(
+                model = user.avatar,
+                contentDescription = "Book Image",
+                contentScale = ContentScale.Crop, modifier = Modifier
                     .size(100.dp)
-                    .clip(CircleShape)
+                    .clip(CircleShape),
+                placeholder = painterResource(id = R.drawable.ic_launcher_foreground)
             )
+
             Spacer(modifier = Modifier.width(16.dp))
             Column(
                 modifier = Modifier

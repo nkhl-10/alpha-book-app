@@ -107,5 +107,6 @@ dependencies {
     implementation("androidx.compose.material3:material3:1.3.1")
     implementation("com.google.accompanist:accompanist-pager:0.31.2-alpha")
 
+    implementation("androidx.compose.material3:material3-adaptive-navigation-suite")
 
 }

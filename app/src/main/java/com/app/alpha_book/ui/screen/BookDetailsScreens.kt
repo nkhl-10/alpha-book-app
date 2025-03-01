@@ -1,6 +1,7 @@
 package com.app.alpha_book.ui.screen
 
 import android.annotation.SuppressLint
+import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -31,28 +32,37 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewModelScope
 import androidx.navigation.NavController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import coil.compose.AsyncImage
 import com.app.alpha_book.model.Book
 import com.app.alpha_book.model.BookImage
+import com.app.alpha_book.model.BuyReqModel
 import com.app.alpha_book.model.Location
 import com.app.alpha_book.remote.api.ApiImpl
 import com.app.alpha_book.remote.api.ApiInterface
+import com.app.alpha_book.remote.sharedPreferences.USER
+import com.app.alpha_book.remote.sharedPreferences.getIntData
+import com.app.alpha_book.remote.sharedPreferences.getStringData
 import com.app.alpha_book.ui.navigation.Argument
 import com.app.alpha_book.ui.utils.ApiStatus
 import com.app.alpha_book.ui.viewModel.UserViewModel
 import com.google.accompanist.pager.HorizontalPager
 import com.google.accompanist.pager.PagerState
 import com.google.accompanist.pager.rememberPagerState
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
@@ -61,6 +71,7 @@ fun BookDetailsScreen(navController: NavController) {
 
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val bookId = navBackStackEntry?.arguments?.getInt(Argument.BOOK_ID.name)
+    val userId = LocalContext.current.getIntData(USER.ID.name, 0)
     if (bookId == null) {
         Text(text = "Invalid Book ID", color = Color.Red)
         return
@@ -114,7 +125,9 @@ fun BookDetailsScreen(navController: NavController) {
                     ?: CircularProgressIndicator(modifier = Modifier.align(Alignment.CenterHorizontally))
             }
         },
-        bottomBar = { BuyButtons() }
+        bottomBar = {
+          if (userId != book?.data?.sellerId) BuyButtons(userId, book?.data?.id,book?.data?.price, viewModel)
+        }
     )
 
 }
@@ -247,7 +260,9 @@ fun LocationSection(location: Location?) {
 }
 
 @Composable
-fun BuyButtons() {
+fun BuyButtons(userId: Int?, id: Int?, amount: Double?, viewModel: UserViewModel) {
+    var isLoading by remember { mutableStateOf(false) } // Track loading state
+
     Card {
         Row(
             modifier = Modifier
@@ -256,21 +271,31 @@ fun BuyButtons() {
             horizontalArrangement = Arrangement.SpaceEvenly
         ) {
             Button(
-                onClick = { /* Handle Add to Cart */ },
-                modifier = Modifier
-                    .weight(1f)
-                    .padding(8.dp)
-            ) {
-                Text(text = "Add to Cart", fontWeight = FontWeight.Bold)
-            }
+                onClick = {
+                    isLoading = true  // Show loading
+                    viewModel.viewModelScope.launch {
+                        val data =BuyReqModel(userId!!, id!!,amount!!)
+                        Log.d("buyDataStr",data.toString())
+                        val response = viewModel.buyBook(data)
+                        isLoading = false // Hide loading after response
 
-            Button(
-                onClick = { /* Handle Buy Now */ },
+                        if (response.status == 200) {
+                            // Handle success (e.g., show toast, navigate)
+                        } else {
+                            // Handle failure (e.g., show error message)
+                        }
+                    }
+                },
                 modifier = Modifier
                     .weight(1f)
-                    .padding(8.dp)
+                    .padding(8.dp),
+                enabled = !isLoading // Disable button when loading
             ) {
-                Text(text = "Buy Now", fontWeight = FontWeight.Bold)
+                if (isLoading) {
+                    CircularProgressIndicator(modifier = Modifier.size(24.dp), color = Color.White)
+                } else {
+                    Text(text = "Buy Now", fontWeight = FontWeight.Bold)
+                }
             }
         }
     }

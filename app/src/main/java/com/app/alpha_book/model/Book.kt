@@ -13,7 +13,7 @@ data class Book(
     @SerialName("category") val category: Category? = null,
     @SerialName("location") val location: Location? = null,
 
-    @SerialName("price") val price: String? = null,
+    @SerialName("price") val price: Double? = null,
     @SerialName("condition") val condition: String? = null,
     @SerialName("book_type") val bookType: String? = null,
 

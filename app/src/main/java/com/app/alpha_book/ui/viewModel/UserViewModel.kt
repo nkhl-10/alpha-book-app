@@ -5,6 +5,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.app.alpha_book.model.ApiResponse
 import com.app.alpha_book.model.Book
+import com.app.alpha_book.model.BuyReqModel
 import com.app.alpha_book.model.Category
 import com.app.alpha_book.model.LoginRequest
 import com.app.alpha_book.model.TokenResponse
@@ -33,6 +34,7 @@ class UserViewModel(private val api: ApiInterface) : ViewModel() {
 
     suspend fun loginUser(cred: LoginRequest): ApiResponse<TokenResponse> = api.login(cred)
 
+    suspend fun buyBook(buyReqModel: BuyReqModel): ApiResponse<String> = api.buy(buyReqModel)
 
     fun getBookList() {
         viewModelScope.launch {

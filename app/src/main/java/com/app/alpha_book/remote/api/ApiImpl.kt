@@ -3,6 +3,7 @@ package com.app.alpha_book.remote.api
 import android.util.Log
 import com.app.alpha_book.model.ApiResponse
 import com.app.alpha_book.model.Book
+import com.app.alpha_book.model.BuyReqModel
 import com.app.alpha_book.model.Category
 import com.app.alpha_book.model.LoginRequest
 import com.app.alpha_book.model.TokenResponse
@@ -31,6 +32,9 @@ class ApiImpl : BaseApiService(), ApiInterface {
 
     override suspend fun login(credentials: LoginRequest): ApiResponse<TokenResponse> =
         safeApiCall { postRequest(LOGIN_URL, credentials) }
+
+    override suspend fun buy(buyReqModel: BuyReqModel): ApiResponse<String> =
+        safeApiCall { postRequest(BUY_BOOK_URL, buyReqModel) }
 
     override suspend fun getBook(): ApiResponse<List<Book>> = safeApiCall { getRequest(BOOKS_URL) }
 

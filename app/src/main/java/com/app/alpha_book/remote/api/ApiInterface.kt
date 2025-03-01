@@ -2,6 +2,7 @@ package com.app.alpha_book.remote.api
 
 import com.app.alpha_book.model.ApiResponse
 import com.app.alpha_book.model.Book
+import com.app.alpha_book.model.BuyReqModel
 import com.app.alpha_book.model.Category
 import com.app.alpha_book.model.LoginRequest
 import com.app.alpha_book.model.TokenResponse
@@ -11,6 +12,8 @@ interface ApiInterface {
     suspend fun register(user: User): ApiResponse<User>
 
     suspend fun login(credentials: LoginRequest): ApiResponse<TokenResponse>
+
+    suspend fun buy(buyReqModel: BuyReqModel): ApiResponse<String>
 
     suspend fun getBook(): ApiResponse<List<Book>>
 
