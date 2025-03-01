@@ -1,7 +1,7 @@
 package com.app.alpha_book.ui.screen
 
 import android.annotation.SuppressLint
-import android.util.Log
+import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -55,17 +55,19 @@ import com.app.alpha_book.remote.api.ApiImpl
 import com.app.alpha_book.remote.api.ApiInterface
 import com.app.alpha_book.remote.sharedPreferences.USER
 import com.app.alpha_book.remote.sharedPreferences.getIntData
-import com.app.alpha_book.remote.sharedPreferences.getStringData
 import com.app.alpha_book.ui.navigation.Argument
 import com.app.alpha_book.ui.utils.ApiStatus
 import com.app.alpha_book.ui.viewModel.UserViewModel
 import com.google.accompanist.pager.HorizontalPager
 import com.google.accompanist.pager.PagerState
 import com.google.accompanist.pager.rememberPagerState
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
-@SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
+@SuppressLint("UnusedMaterial3ScaffoldPaddingParameter", "StateFlowValueCalledInComposition")
 @Composable
 fun BookDetailsScreen(navController: NavController) {
 
@@ -122,11 +124,12 @@ fun BookDetailsScreen(navController: NavController) {
                     }
 
                 }
-                    ?: CircularProgressIndicator(modifier = Modifier.align(Alignment.CenterHorizontally))
+                    ?: FullScreenLoader(true)
+                FullScreenLoader(viewModel.isLoading.value)
             }
         },
         bottomBar = {
-          if (userId != book?.data?.sellerId) BuyButtons(userId, book?.data?.id,book?.data?.price, viewModel)
+          if (userId != book?.data?.sellerId) BuyButtons(userId, book?.data?.id,book?.data?.price, viewModel,navController)
         }
     )
 
@@ -260,7 +263,28 @@ fun LocationSection(location: Location?) {
 }
 
 @Composable
-fun BuyButtons(userId: Int?, id: Int?, amount: Double?, viewModel: UserViewModel) {
+fun FullScreenLoader(isLoading: Boolean) {
+    if (isLoading) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize(),
+            contentAlignment = Alignment.Center // ✅ Center the loader on the screen
+        ) {
+            CircularProgressIndicator()
+        }
+    }
+}
+
+
+@Composable
+fun BuyButtons(
+    userId: Int?,
+    id: Int?,
+    amount: Double?,
+    viewModel: UserViewModel,
+    navController: NavController
+) {
+    val context = LocalContext.current
     var isLoading by remember { mutableStateOf(false) } // Track loading state
 
     Card {
@@ -275,14 +299,15 @@ fun BuyButtons(userId: Int?, id: Int?, amount: Double?, viewModel: UserViewModel
                     isLoading = true  // Show loading
                     viewModel.viewModelScope.launch {
                         val data =BuyReqModel(userId!!, id!!,amount!!)
-                        Log.d("buyDataStr",data.toString())
                         val response = viewModel.buyBook(data)
-                        isLoading = false // Hide loading after response
-
-                        if (response.status == 200) {
-                            // Handle success (e.g., show toast, navigate)
+                        isLoading = false
+                        if (response.status == ApiStatus.CREATED.code) {
+                            delay(2000)
+                            navController.navigateUp()
                         } else {
-                            // Handle failure (e.g., show error message)
+                            CoroutineScope(Dispatchers.Main).launch {
+                                Toast.makeText(context, "Failed to buy", Toast.LENGTH_SHORT).show()
+                            }
                         }
                     }
                 },

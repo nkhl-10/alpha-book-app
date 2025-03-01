@@ -48,14 +48,6 @@ import com.app.alpha_book.ui.viewModel.UserViewModel
 @Composable
 fun ProfileTabScreen(navController: NavController) {
     val context = LocalContext.current
-    /* Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-         Button(onClick = {
-             context.clearAllData()
-             navHostController.navigate(NavigationItem.Splash.route)
-         }) {}*/
-//            Text(text = "Logout", style = TextStyle(fontSize = 18.sp))
-
-
     val userApi: ApiInterface = ApiImpl()
     val viewModel = remember { UserViewModel(userApi) }
     val user by viewModel.userState.collectAsState()

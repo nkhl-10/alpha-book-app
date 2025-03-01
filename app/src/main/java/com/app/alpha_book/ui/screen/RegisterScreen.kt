@@ -181,7 +181,7 @@ fun RegisterScreen(navController: NavHostController) {
                             val response = viewModel.createUser(user)
                             Log.i("TAG", "RegisterScreenAuth: $response")
                             if (response.status == ApiStatus.CREATED.code){
-                                navController.navigate(ScreenNavigationItem.Home.route) {
+                                navController.navigate(ScreenNavigationItem.Login.route) {
                                     popUpTo(ScreenNavigationItem.Login.route) { inclusive = true }
                                 }
                             }else{
