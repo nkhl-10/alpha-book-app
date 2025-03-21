@@ -3,7 +3,6 @@ package com.app.alpha_book.ui.tabs
 import android.content.Context
 import android.graphics.Bitmap
 import android.net.Uri
-import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
@@ -21,36 +20,43 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Tab
 import androidx.compose.material3.TabRow
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.core.net.toUri
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
+import com.app.alpha_book.model.Address
 import com.app.alpha_book.model.User
 import com.app.alpha_book.remote.api.ApiImpl
 import com.app.alpha_book.remote.api.ApiInterface
@@ -80,7 +86,7 @@ fun ProfileTabScreen(navController: NavController) {
     ) {
         if (user?.status == ApiStatus.SUCCESS.code) {
             user?.data?.let {
-                UserProfileCard(it,viewModel)
+                UserProfileCard(it, viewModel)
                 BooksPager(navController, it.id)
             } ?: Text("Loading...")
 
@@ -98,29 +104,41 @@ fun UserProfileCard(user: User, viewModel: UserViewModel) {
     val context = LocalContext.current
     val imageUri = remember { mutableStateOf<Uri?>(null) }
     val showDialog = remember { mutableStateOf(false) }
+    val showDialogForAddAddress = remember { mutableStateOf(false) }
 
-    val pickImageLauncher = rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { uri ->
-        uri?.let {
-            imageUri.value = it
-            val file = uriToFile(context, it)
-            viewModel.uploadUserImage(user.id, file)
+    val pickImageLauncher =
+        rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { uri ->
+            uri?.let {
+                imageUri.value = it
+                val file = uriToFile(context, it)
+                viewModel.uploadUserImage(user.id, file)
+            }
         }
-    }
 
-    val takePictureLauncher = rememberLauncherForActivityResult(ActivityResultContracts.TakePicturePreview()) { bitmap ->
-        bitmap?.let {
-            val uri = saveBitmapToCache(context, it)
-            imageUri.value = uri
-            val file = uriToFile(context, uri)
-            viewModel.uploadUserImage(user.id, file)
+    val takePictureLauncher =
+        rememberLauncherForActivityResult(ActivityResultContracts.TakePicturePreview()) { bitmap ->
+            bitmap?.let {
+                val uri = saveBitmapToCache(context, it)
+                imageUri.value = uri
+                val file = uriToFile(context, uri)
+                viewModel.uploadUserImage(user.id, file)
+            }
         }
-    }
 
-    Card(modifier = Modifier.fillMaxWidth().padding(16.dp), elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)) {
-        Row(modifier = Modifier.padding(16.dp).fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(16.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
+    ) {
+        Row(
+            modifier = Modifier
+                .padding(16.dp)
+                .fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
 
             Box(contentAlignment = Alignment.BottomEnd) {
-                // Profile Image
                 AsyncImage(
                     model = user.avatar,
                     contentDescription = "Book Image",
@@ -133,9 +151,6 @@ fun UserProfileCard(user: User, viewModel: UserViewModel) {
                 IconButton(
                     onClick = { showDialog.value = true },
                     modifier = Modifier
-                        .size(20.dp)
-                        .height(18.dp)
-                        .width(18.dp)
                         .clip(CircleShape)
                         .background(Color.White)
                         .border(1.dp, Color.Gray, CircleShape)
@@ -143,7 +158,6 @@ fun UserProfileCard(user: User, viewModel: UserViewModel) {
                     Icon(Icons.Default.Add, contentDescription = "Add Photo", tint = Color.Black)
                 }
             }
-
 
 
             // Dialog to pick an option
@@ -204,10 +218,14 @@ fun UserProfileCard(user: User, viewModel: UserViewModel) {
             verticalAlignment = Alignment.CenterVertically
         ) {
             OutlinedButton(
-                onClick = {},
-                content = { Text("Edit Profile") },
+                onClick = {
+                    showDialogForAddAddress.value = true
+                },
+                content = { Text("Add Address") },
                 modifier = Modifier.weight(1f)
             )
+
+            AddAddressDialog(user.id,showDialogForAddAddress,viewModel)
             Spacer(modifier = Modifier.width(18.dp))
 
             OutlinedButton(
@@ -306,6 +324,7 @@ fun saveBitmapToCache(context: Context, bitmap: Bitmap): Uri {
     outputStream.close()
     return file.toUri()
 }
+
 fun uriToFile(context: Context, uri: Uri): File {
     val file = File(context.cacheDir, "upload_image.jpg")
     context.contentResolver.openInputStream(uri)?.use { inputStream ->
@@ -314,4 +333,88 @@ fun uriToFile(context: Context, uri: Uri): File {
         }
     }
     return file
+}
+
+@Composable
+fun AddAddressDialog(id:Int,showDialog: MutableState<Boolean>, viewModel: UserViewModel) {
+    var street by remember { mutableStateOf("") }
+    var city by remember { mutableStateOf("") }
+    var state by remember { mutableStateOf("") }
+    var zipCode by remember { mutableStateOf("") }
+    var latitude by remember { mutableStateOf("") }
+    var longitude by remember { mutableStateOf("") }
+
+    if (showDialog.value) {
+        AlertDialog(
+            onDismissRequest = { showDialog.value = false },
+            title = { Text(text = "Add Address") },
+            text = {
+                Column {
+                    OutlinedTextField(
+                        value = street,
+                        onValueChange = { street = it },
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text),
+                        label = { Text("Street") }
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    OutlinedTextField(
+                        value = city,
+                        onValueChange = { city = it },
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text),
+                        label = { Text("City") }
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    OutlinedTextField(
+                        value = state,
+                        onValueChange = { state = it },
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text),
+                        label = { Text("State") }
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    OutlinedTextField(
+                        value = zipCode,
+                        onValueChange = { zipCode = it },
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                        label = { Text("Zip Code") }
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    OutlinedTextField(
+                        value = latitude,
+                        onValueChange = { latitude = it },
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                        label = { Text("Latitude") }
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    OutlinedTextField(
+                        value = longitude,
+                        onValueChange = { longitude = it },
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                        label = { Text("Longitude") }
+                    )
+                }
+            },
+            confirmButton = {
+                Button(onClick = {
+                    showDialog.value = false
+                    val address = Address(
+                        userId = id,
+                        street = street,
+                        city = city,
+                        state = state,
+                        zipCode = zipCode,
+                        latitude = latitude.toDouble(),
+                        longitude = longitude.toDouble()
+                    )
+                    viewModel.addAddress(address)
+                }) {
+                    Text("Save")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showDialog.value = false }) {
+                    Text("Cancel")
+                }
+            }
+        )
+    }
 }

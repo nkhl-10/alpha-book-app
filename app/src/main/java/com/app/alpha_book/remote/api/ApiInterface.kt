@@ -1,5 +1,6 @@
 package com.app.alpha_book.remote.api
 
+import com.app.alpha_book.model.Address
 import com.app.alpha_book.model.ApiResponse
 import com.app.alpha_book.model.Book
 import com.app.alpha_book.model.BuyReqModel
@@ -38,4 +39,5 @@ interface ApiInterface {
 
     suspend fun uploadUserImage(userId: Int, file: File): ApiResponse<String>
 
+    suspend fun addAddress(address: Address): ApiResponse<String>
 }

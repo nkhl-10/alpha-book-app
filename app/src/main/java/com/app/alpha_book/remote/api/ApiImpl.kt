@@ -1,6 +1,7 @@
 package com.app.alpha_book.remote.api
 
 import android.util.Log
+import com.app.alpha_book.model.Address
 import com.app.alpha_book.model.ApiResponse
 import com.app.alpha_book.model.Book
 import com.app.alpha_book.model.BuyReqModel
@@ -8,6 +9,7 @@ import com.app.alpha_book.model.Category
 import com.app.alpha_book.model.LoginRequest
 import com.app.alpha_book.model.TokenResponse
 import com.app.alpha_book.model.User
+import com.app.alpha_book.ui.utils.ADDRESS_URL
 import com.app.alpha_book.ui.utils.BASE_URL
 import com.app.alpha_book.ui.utils.BOOKS_SEARCH_URL
 import com.app.alpha_book.ui.utils.BOOKS_URL
@@ -113,6 +115,12 @@ class ApiImpl : BaseApiService(), ApiInterface {
             data = null,
             message = "Upload Successful"
         )
+    }
+
+    override suspend fun addAddress(address: Address): ApiResponse<String> {
+       return safeApiCall {
+            postRequest(ADDRESS_URL, address)
+        }
     }
 
 

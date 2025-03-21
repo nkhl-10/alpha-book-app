@@ -3,6 +3,7 @@ package com.app.alpha_book.ui.viewModel
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.app.alpha_book.model.Address
 import com.app.alpha_book.model.ApiResponse
 import com.app.alpha_book.model.Book
 import com.app.alpha_book.model.BuyReqModel
@@ -45,12 +46,13 @@ class UserViewModel(private val api: ApiInterface) : ViewModel() {
     fun uploadUserImage(userId: Int, file: File) {
         viewModelScope.launch {
             val response = api.uploadUserImage(userId, file)
-            if (response.status == ApiStatus.SUCCESS.code){
+            if (response.status == ApiStatus.SUCCESS.code) {
                 getUser(userId)
             }
             _uploadState.value = response
         }
     }
+
     fun getBookList() {
         viewModelScope.launch {
             try {
@@ -60,6 +62,17 @@ class UserViewModel(private val api: ApiInterface) : ViewModel() {
             } catch (e: Exception) {
                 Log.e("DATAAPI", "Error fetching books: ${e.message}")
                 _bookListState.value = emptyList()
+            }
+        }
+    }
+
+    fun addAddress(address: Address) {
+        viewModelScope.launch {
+            try {
+                val response = api.addAddress(address)
+                Log.i("DATAAPI", "Address Added: $response")
+            } catch (e: Exception) {
+                Log.e("DATAAPI", "Error fetching books: ${e.message}")
             }
         }
     }
