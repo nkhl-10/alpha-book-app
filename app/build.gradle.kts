@@ -76,11 +76,13 @@ dependencies {
 
 
     //K-tor
-    val ktorVersion = "1.6.8"
-//    implementation("io.ktor:ktor-client-android:$ktorVersion")
-//    implementation("io.ktor:ktor-client-core:$ktorVersion")
-//    implementation("io.ktor:ktor-client-serialization-jvm:$ktorVersion")
-//    implementation("io.ktor:ktor-client-logging:$ktorVersion")
+    val ktorVersion = "2.3.7"
+    implementation("io.ktor:ktor-client-android:$ktorVersion")
+    implementation("io.ktor:ktor-client-content-negotiation:$ktorVersion")
+    implementation("io.ktor:ktor-serialization-kotlinx-json:$ktorVersion")
+    implementation("io.ktor:ktor-client-okhttp:$ktorVersion") // Better for Android
+    implementation("io.ktor:ktor-client-logging:$ktorVersion") // For debugging API requests
+
 
     //Coroutines
     val coroutinesVersion = "1.7.3"
@@ -93,10 +95,6 @@ dependencies {
     val koinVersion = "3.5.3"
     implementation("io.insert-koin:koin-android:$koinVersion")
 
-    implementation ("io.ktor:ktor-client-android:$ktorVersion")
-    implementation ("io.ktor:ktor-client-json-jvm:$ktorVersion")
-    implementation ("io.ktor:ktor-client-serialization-jvm:$ktorVersion")
-
     implementation("com.google.code.gson:gson:2.10.1")
 
     implementation("androidx.compose.material:material-icons-extended:1.7.8")
@@ -108,5 +106,6 @@ dependencies {
     implementation("com.google.accompanist:accompanist-pager:0.31.2-alpha")
 
     implementation("androidx.compose.material3:material3-adaptive-navigation-suite")
+
 
 }

@@ -2,7 +2,7 @@ package com.app.alpha_book.ui.utils
 
 
 //const val BASE_URL ="https://67698771863eaa5ac0dbf523.mockapi.io/"
-const val BASE_URL ="http://192.168.171.172:8000/api/"
+const val BASE_URL ="http://192.168.17.172:8000/api/"
 const val REGISTER_URL = "register"
 const val LOGIN_URL = "login"
 const val BOOKS_SEARCH_URL = "search"
@@ -12,6 +12,7 @@ const val USER_URL = "users"
 const val CATEGORIES_URL = "categories"
 const val USER_BY_BOOKS_URL = "userByBooks"
 const val USER_BY_ORDERED_BOOKS_URL = "userByOrderedBooks"
+const val UPLOAD_AVATAR_URL = "uploadAvatar"
 
 enum class ApiStatus(val code: Int, val message: String) {
     // ✅ Success Codes

@@ -19,6 +19,7 @@ data class Book(
 
     @SerialName("pdf_file") val pdfFile: String? = null,
     @SerialName("read_access") val readAccess: String? = null,
+    @SerialName("is_sold") val isSold: Boolean? = null,
 
     @SerialName("created_at") val createdAt: String? = null,
     @SerialName("updated_at") val updatedAt: String? = null,

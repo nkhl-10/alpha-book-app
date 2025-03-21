@@ -1,6 +1,13 @@
 package com.app.alpha_book.ui.tabs
 
-import android.util.Log
+import android.content.Context
+import android.graphics.Bitmap
+import android.net.Uri
+import android.widget.Toast
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -14,29 +21,36 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Tab
 import androidx.compose.material3.TabRow
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.core.net.toUri
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
-import com.app.alpha_book.R
 import com.app.alpha_book.model.User
 import com.app.alpha_book.remote.api.ApiImpl
 import com.app.alpha_book.remote.api.ApiInterface
@@ -44,6 +58,8 @@ import com.app.alpha_book.remote.sharedPreferences.USER
 import com.app.alpha_book.remote.sharedPreferences.getIntData
 import com.app.alpha_book.ui.utils.ApiStatus
 import com.app.alpha_book.ui.viewModel.UserViewModel
+import java.io.File
+import java.io.FileOutputStream
 
 @Composable
 fun ProfileTabScreen(navController: NavController) {
@@ -64,7 +80,7 @@ fun ProfileTabScreen(navController: NavController) {
     ) {
         if (user?.status == ApiStatus.SUCCESS.code) {
             user?.data?.let {
-                UserProfileCard(it)
+                UserProfileCard(it,viewModel)
                 BooksPager(navController, it.id)
             } ?: Text("Loading...")
 
@@ -77,27 +93,83 @@ fun ProfileTabScreen(navController: NavController) {
 
 
 @Composable
-fun UserProfileCard(user: User) {
-    Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(16.dp),
-        elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
-    ) {
-        Row(
-            modifier = Modifier
-                .padding(16.dp)
-                .fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            AsyncImage(
-                model = user.avatar,
-                contentDescription = "Book Image",
-                contentScale = ContentScale.Crop, modifier = Modifier
-                    .size(100.dp)
-                    .clip(CircleShape),
-                placeholder = painterResource(id = R.drawable.ic_launcher_foreground)
-            )
+fun UserProfileCard(user: User, viewModel: UserViewModel) {
+
+    val context = LocalContext.current
+    val imageUri = remember { mutableStateOf<Uri?>(null) }
+    val showDialog = remember { mutableStateOf(false) }
+
+    val pickImageLauncher = rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { uri ->
+        uri?.let {
+            imageUri.value = it
+            val file = uriToFile(context, it)
+            viewModel.uploadUserImage(user.id, file)
+        }
+    }
+
+    val takePictureLauncher = rememberLauncherForActivityResult(ActivityResultContracts.TakePicturePreview()) { bitmap ->
+        bitmap?.let {
+            val uri = saveBitmapToCache(context, it)
+            imageUri.value = uri
+            val file = uriToFile(context, uri)
+            viewModel.uploadUserImage(user.id, file)
+        }
+    }
+
+    Card(modifier = Modifier.fillMaxWidth().padding(16.dp), elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)) {
+        Row(modifier = Modifier.padding(16.dp).fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+
+            Box(contentAlignment = Alignment.BottomEnd) {
+                // Profile Image
+                AsyncImage(
+                    model = user.avatar,
+                    contentDescription = "Book Image",
+                    contentScale = ContentScale.Crop,
+                    modifier = Modifier
+                        .size(120.dp)
+                        .clip(CircleShape)
+                        .border(2.dp, Color.Gray, CircleShape)
+                )
+                IconButton(
+                    onClick = { showDialog.value = true },
+                    modifier = Modifier
+                        .size(20.dp)
+                        .height(18.dp)
+                        .width(18.dp)
+                        .clip(CircleShape)
+                        .background(Color.White)
+                        .border(1.dp, Color.Gray, CircleShape)
+                ) {
+                    Icon(Icons.Default.Add, contentDescription = "Add Photo", tint = Color.Black)
+                }
+            }
+
+
+
+            // Dialog to pick an option
+            if (showDialog.value) {
+                AlertDialog(
+                    onDismissRequest = { showDialog.value = false },
+                    title = { Text("Select Image") },
+                    text = {
+                        Column {
+                            TextButton(onClick = {
+                                showDialog.value = false
+                                pickImageLauncher.launch("image/*")
+                            }) {
+                                Text("Pick from Gallery")
+                            }
+                            TextButton(onClick = {
+                                showDialog.value = false
+                                takePictureLauncher.launch(null)
+                            }) {
+                                Text("Take a Picture")
+                            }
+                        }
+                    },
+                    confirmButton = {}
+                )
+            }
 
             Spacer(modifier = Modifier.width(16.dp))
             Column(
@@ -223,4 +295,23 @@ fun BooksPager(navController: NavController, id: Int) {
             }
         }
     }
+}
+
+
+fun saveBitmapToCache(context: Context, bitmap: Bitmap): Uri {
+    val file = File(context.cacheDir, "profile_pic.jpg")
+    val outputStream = FileOutputStream(file)
+    bitmap.compress(Bitmap.CompressFormat.JPEG, 100, outputStream)
+    outputStream.flush()
+    outputStream.close()
+    return file.toUri()
+}
+fun uriToFile(context: Context, uri: Uri): File {
+    val file = File(context.cacheDir, "upload_image.jpg")
+    context.contentResolver.openInputStream(uri)?.use { inputStream ->
+        file.outputStream().use { outputStream ->
+            inputStream.copyTo(outputStream)
+        }
+    }
+    return file
 }

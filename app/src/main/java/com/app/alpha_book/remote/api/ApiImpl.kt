@@ -8,22 +8,33 @@ import com.app.alpha_book.model.Category
 import com.app.alpha_book.model.LoginRequest
 import com.app.alpha_book.model.TokenResponse
 import com.app.alpha_book.model.User
+import com.app.alpha_book.ui.utils.BASE_URL
 import com.app.alpha_book.ui.utils.BOOKS_SEARCH_URL
 import com.app.alpha_book.ui.utils.BOOKS_URL
 import com.app.alpha_book.ui.utils.BUY_BOOK_URL
 import com.app.alpha_book.ui.utils.CATEGORIES_URL
 import com.app.alpha_book.ui.utils.LOGIN_URL
 import com.app.alpha_book.ui.utils.REGISTER_URL
+import com.app.alpha_book.ui.utils.UPLOAD_AVATAR_URL
 import com.app.alpha_book.ui.utils.USER_BY_BOOKS_URL
 import com.app.alpha_book.ui.utils.USER_BY_ORDERED_BOOKS_URL
 import com.app.alpha_book.ui.utils.USER_URL
-import io.ktor.client.call.receive
-import io.ktor.client.features.ClientRequestException
-import kotlinx.serialization.json.Json
+import io.ktor.client.plugins.ClientRequestException
+import io.ktor.client.request.forms.MultiPartFormDataContent
+import io.ktor.client.request.forms.formData
+import io.ktor.client.request.forms.submitFormWithBinaryData
+import io.ktor.client.request.post
+import io.ktor.client.request.setBody
 import io.ktor.client.statement.*
+import io.ktor.http.ContentType
+import io.ktor.http.Headers
+import io.ktor.http.HttpHeaders
+import io.ktor.http.contentType
 import kotlinx.serialization.SerializationException
+import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonObject
+import java.io.File
 
 class ApiImpl : BaseApiService(), ApiInterface {
 
@@ -41,7 +52,7 @@ class ApiImpl : BaseApiService(), ApiInterface {
     override suspend fun getBook(bookId: Int): ApiResponse<Book> {
         val response: HttpResponse = getRequest("$BOOKS_URL/$bookId")
         val statusCode = response.status.value
-        val responseBody: String = response.receive()
+        val responseBody: String = response.bodyAsText()
 
         Log.i("API_CALL", "Response Status:$bookId :: $statusCode")
         Log.i("API_CALL", "Raw Response: $responseBody")
@@ -64,7 +75,7 @@ class ApiImpl : BaseApiService(), ApiInterface {
         Log.i("API_CALL", "Raw Response: $response")
         val statusCode = response.status.value
         Log.i("API_CALL", "Raw Response: $statusCode")
-        val responseBody: String = response.receive()
+        val responseBody: String = response.bodyAsText()
 
         Log.i("API_CALL", "Response Status:$userId :: $statusCode")
         Log.i("API_CALL", "Raw Response: $responseBody")
@@ -80,6 +91,28 @@ class ApiImpl : BaseApiService(), ApiInterface {
                 message = "Serialization Error: ${e.message}"
             )
         }
+    }
+
+    override suspend fun uploadUserImage(userId: Int, file: File): ApiResponse<String> {
+        val response: HttpResponse = KtorClient.client.post("$BASE_URL$UPLOAD_AVATAR_URL/") {
+            contentType(ContentType.MultiPart.FormData)
+            setBody(MultiPartFormDataContent(
+                formData {
+                    append("user_id", userId.toString())
+                    append("avatar", file.readBytes(), Headers.build {
+                        append(
+                            HttpHeaders.ContentDisposition,
+                            "form-data; name=\"avatar\"; filename=\"${file.name}\""
+                        )
+                    })
+                }
+            ))
+        }
+        return ApiResponse(
+            status = response.status.value,
+            data = null,
+            message = "Upload Successful"
+        )
     }
 
 
@@ -117,7 +150,7 @@ suspend inline fun <reified T> safeApiCall(apiCall: () -> HttpResponse): ApiResp
     return try {
         val response: HttpResponse = apiCall()
         val statusCode = response.status.value
-        val responseBody: String = response.receive()
+        val responseBody: String = response.bodyAsText()
 
         Log.i("safeApiCall", "Response Status: $statusCode")
         Log.i("safeApiCall", "Raw Response: $responseBody")
@@ -151,7 +184,7 @@ suspend inline fun <reified T> safeApiCall(apiCall: () -> HttpResponse): ApiResp
 
     } catch (e: ClientRequestException) {
         val statusCode = e.response.status.value
-        val errorBody = e.response.readText()
+        val errorBody = e.response.bodyAsText()
         Log.e("safeApiCall", "ClientRequestException: Status $statusCode, Error: $errorBody")
         ApiResponse(status = statusCode, message = errorBody, data = null)
 

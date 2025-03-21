@@ -2,13 +2,16 @@ package com.app.alpha_book.remote.api
 
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.android.Android
-import io.ktor.client.features.DefaultRequest
-import io.ktor.client.features.json.JsonFeature
-import io.ktor.client.features.json.serializer.KotlinxSerializer
+import io.ktor.client.plugins.DefaultRequest
+import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
+import io.ktor.client.request.header
+import io.ktor.http.ContentType
+import io.ktor.http.HttpHeaders
+import io.ktor.serialization.kotlinx.json.json
 import kotlinx.serialization.json.Json
 
 val json = Json {
-    encodeDefaults= true
+    encodeDefaults = true
     ignoreUnknownKeys = true
     isLenient = true
     coerceInputValues = true
@@ -16,11 +19,11 @@ val json = Json {
 
 object KtorClient {
     val client = HttpClient(Android) {
-        install(JsonFeature) {
-            serializer = KotlinxSerializer(json)
+        install(ContentNegotiation) {
+            json(json)
         }
         install(DefaultRequest) {
-            headers.append("Content-Type", "application/json")
+            header(HttpHeaders.ContentType, ContentType.Application.Json)
         }
     }
 }

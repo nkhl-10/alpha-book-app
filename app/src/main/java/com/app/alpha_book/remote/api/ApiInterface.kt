@@ -7,6 +7,7 @@ import com.app.alpha_book.model.Category
 import com.app.alpha_book.model.LoginRequest
 import com.app.alpha_book.model.TokenResponse
 import com.app.alpha_book.model.User
+import java.io.File
 
 interface ApiInterface {
     suspend fun register(user: User): ApiResponse<User>
@@ -34,5 +35,7 @@ interface ApiInterface {
     suspend fun getUserByBooks(bookId: Int): ApiResponse<List<Book>>
 
     suspend fun getUserByOrderedBooks(userId: Int): ApiResponse<List<Book>>
+
+    suspend fun uploadUserImage(userId: Int, file: File): ApiResponse<String>
 
 }
