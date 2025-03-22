@@ -12,7 +12,7 @@ const val USER_URL = "users"
 const val CATEGORIES_URL = "categories"
 const val USER_BY_BOOKS_URL = "userByBooks"
 const val USER_BY_ORDERED_BOOKS_URL = "userByOrderedBooks"
-const val UPLOAD_AVATAR_URL = "uploadAvatar"
+const val UPLOAD_AVATAR_URL = "uploadAvatar/"
 const val ADDRESS_URL = "addresses"
 
 enum class ApiStatus(val code: Int, val message: String) {

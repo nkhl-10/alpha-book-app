@@ -9,6 +9,7 @@ sealed class ScreenNavigationItem(val route: String) {
     object Register : ScreenNavigationItem(Screen.REGISTER.name)
     object BookDetails : ScreenNavigationItem(Screen.BOOK_DETAILS.name)
     object CategoryDetails : ScreenNavigationItem(Screen.CATEGORY_DETAILS.name)
+    object OrderPage : ScreenNavigationItem(Screen.ORDER_PAGE.name)
 }
 
 

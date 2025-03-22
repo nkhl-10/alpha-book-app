@@ -1,8 +1,12 @@
 package com.app.alpha_book.ui.tabs
 
+import android.Manifest
 import android.content.Context
+import android.content.pm.PackageManager
 import android.graphics.Bitmap
+import android.location.Location
 import android.net.Uri
+import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
@@ -12,6 +16,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -25,8 +30,10 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -41,6 +48,8 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableDoubleStateOf
+import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -50,9 +59,12 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import androidx.core.content.ContextCompat
 import androidx.core.net.toUri
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
@@ -64,6 +76,8 @@ import com.app.alpha_book.remote.sharedPreferences.USER
 import com.app.alpha_book.remote.sharedPreferences.getIntData
 import com.app.alpha_book.ui.utils.ApiStatus
 import com.app.alpha_book.ui.viewModel.UserViewModel
+import com.google.android.gms.location.FusedLocationProviderClient
+import com.google.android.gms.location.LocationServices
 import java.io.File
 import java.io.FileOutputStream
 
@@ -105,7 +119,6 @@ fun UserProfileCard(user: User, viewModel: UserViewModel) {
     val imageUri = remember { mutableStateOf<Uri?>(null) }
     val showDialog = remember { mutableStateOf(false) }
     val showDialogForAddAddress = remember { mutableStateOf(false) }
-
     val pickImageLauncher =
         rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { uri ->
             uri?.let {
@@ -225,7 +238,7 @@ fun UserProfileCard(user: User, viewModel: UserViewModel) {
                 modifier = Modifier.weight(1f)
             )
 
-            AddAddressDialog(user.id,showDialogForAddAddress,viewModel)
+            AddAddressDialog(showDialogForAddAddress, viewModel)
             Spacer(modifier = Modifier.width(18.dp))
 
             OutlinedButton(
@@ -336,13 +349,16 @@ fun uriToFile(context: Context, uri: Uri): File {
 }
 
 @Composable
-fun AddAddressDialog(id:Int,showDialog: MutableState<Boolean>, viewModel: UserViewModel) {
+fun AddAddressDialog(showDialog: MutableState<Boolean>, viewModel: UserViewModel) {
+    val context = LocalContext.current
     var street by remember { mutableStateOf("") }
     var city by remember { mutableStateOf("") }
     var state by remember { mutableStateOf("") }
     var zipCode by remember { mutableStateOf("") }
-    var latitude by remember { mutableStateOf("") }
-    var longitude by remember { mutableStateOf("") }
+    var latitude by remember { mutableDoubleStateOf(0.0) }
+    var longitude by remember { mutableDoubleStateOf(0.0) }
+    var isLoading by remember { mutableStateOf(false)  }
+    val fusedLocationClient = remember { LocationServices.getFusedLocationProviderClient(context) }
 
     if (showDialog.value) {
         AlertDialog(
@@ -378,32 +394,42 @@ fun AddAddressDialog(id:Int,showDialog: MutableState<Boolean>, viewModel: UserVi
                         label = { Text("Zip Code") }
                     )
                     Spacer(modifier = Modifier.height(8.dp))
-                    OutlinedTextField(
-                        value = latitude,
-                        onValueChange = { latitude = it },
-                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                        label = { Text("Latitude") }
-                    )
+                    Button(
+                        onClick = {
+                            isLoading = true
+                            getCurrentLocation(context, fusedLocationClient) { location ->
+                                if (location != null) {
+                                    latitude = location.latitude
+                                    longitude = location.longitude
+                                }
+                                isLoading = false
+                            }
+                        },
+                        modifier = Modifier.fillMaxWidth(),
+                        enabled = !isLoading
+                    ) {
+                        Text("Fetch Location", fontSize = 16.sp)
+                    }
+                    FullScreenLoader(isLoading)
                     Spacer(modifier = Modifier.height(8.dp))
-                    OutlinedTextField(
-                        value = longitude,
-                        onValueChange = { longitude = it },
-                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                        label = { Text("Longitude") }
-                    )
+                    Text(text = "Latitude: $latitude", fontWeight = FontWeight.Bold, fontSize = 16.sp)
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text(text = "Longitude: $longitude", fontWeight = FontWeight.Bold, fontSize = 16.sp)
+
                 }
             },
             confirmButton = {
                 Button(onClick = {
                     showDialog.value = false
+                    val id = context.getIntData(USER.ID.name, 0)
                     val address = Address(
-                        userId = id,
+                        user = id,
                         street = street,
                         city = city,
                         state = state,
-                        zipCode = zipCode,
-                        latitude = latitude.toDouble(),
-                        longitude = longitude.toDouble()
+                        zip_code = zipCode,
+                        latitude = latitude,
+                        longitude = longitude
                     )
                     viewModel.addAddress(address)
                 }) {
@@ -416,5 +442,34 @@ fun AddAddressDialog(id:Int,showDialog: MutableState<Boolean>, viewModel: UserVi
                 }
             }
         )
+    }
+}
+
+@Composable
+fun FullScreenLoader(isLoading: Boolean) {
+    if (isLoading) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize(),
+            contentAlignment = Alignment.Center
+        ) {
+            CircularProgressIndicator()
+        }
+    }
+}
+
+fun getCurrentLocation(context: Context, fusedLocationClient: FusedLocationProviderClient, onLocationReceived: (Location?) -> Unit) {
+
+    if (ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+        fusedLocationClient.lastLocation.addOnSuccessListener { location ->
+            Log.e("Location", "get location: $location")
+            onLocationReceived(location)
+        }.addOnFailureListener {
+            Log.e("Location", "Failed to get location: ${it.message}")
+            onLocationReceived(null)
+        }
+    } else {
+        Log.e("Location", "Location permission not granted")
+        onLocationReceived(null)
     }
 }

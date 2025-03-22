@@ -40,4 +40,6 @@ interface ApiInterface {
     suspend fun uploadUserImage(userId: Int, file: File): ApiResponse<String>
 
     suspend fun addAddress(address: Address): ApiResponse<String>
+
+    suspend fun getAddress(userId: Int): ApiResponse<List<Address>>
 }

@@ -10,6 +10,7 @@ import androidx.navigation.navArgument
 import com.app.alpha_book.ui.screen.BookDetailsScreen
 import com.app.alpha_book.ui.screen.CategoryByBooks
 import com.app.alpha_book.ui.screen.HomeScreen
+import com.app.alpha_book.ui.screen.OrderScreen
 import com.app.alpha_book.ui.screen.RegisterScreen
 import com.app.alpha_book.ui.screen.SplashScreen
 
@@ -34,6 +35,14 @@ fun AppNavHost(
         ) {
             it.arguments?.getInt(Argument.BOOK_ID.name)
             BookDetailsScreen(navController)
+        }
+
+        composable(
+            route = ScreenNavigationItem.OrderPage.route +"/{${Argument.BOOK_ID.name}}",
+            arguments = listOf(navArgument(Argument.BOOK_ID.name) { type = NavType.IntType })
+        ) {
+            it.arguments?.getInt(Argument.BOOK_ID.name)
+            OrderScreen(navController)
         }
 
         composable(

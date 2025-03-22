@@ -20,6 +20,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -43,6 +44,7 @@ import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.viewinterop.AndroidView
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.NavController
 import androidx.navigation.compose.currentBackStackEntryAsState
@@ -56,15 +58,18 @@ import com.app.alpha_book.remote.api.ApiInterface
 import com.app.alpha_book.remote.sharedPreferences.USER
 import com.app.alpha_book.remote.sharedPreferences.getIntData
 import com.app.alpha_book.ui.navigation.Argument
+import com.app.alpha_book.ui.navigation.ScreenNavigationItem
 import com.app.alpha_book.ui.utils.ApiStatus
 import com.app.alpha_book.ui.viewModel.UserViewModel
 import com.google.accompanist.pager.HorizontalPager
 import com.google.accompanist.pager.PagerState
 import com.google.accompanist.pager.rememberPagerState
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
+import com.google.android.gms.maps.model.CameraPosition
+import com.google.android.gms.maps.model.LatLng
+import com.google.maps.android.compose.GoogleMap
+import com.google.maps.android.compose.Marker
+import com.google.maps.android.compose.rememberCameraPositionState
+import com.google.maps.android.compose.rememberMarkerState
 
 @OptIn(ExperimentalMaterial3Api::class)
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter", "StateFlowValueCalledInComposition")
@@ -73,7 +78,6 @@ fun BookDetailsScreen(navController: NavController) {
 
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val bookId = navBackStackEntry?.arguments?.getInt(Argument.BOOK_ID.name)
-    val userId = LocalContext.current.getIntData(USER.ID.name, 0)
     if (bookId == null) {
         Text(text = "Invalid Book ID", color = Color.Red)
         return
@@ -90,7 +94,7 @@ fun BookDetailsScreen(navController: NavController) {
             CenterAlignedTopAppBar(
                 title = { Text(text = "Book Details") },
                 navigationIcon = {
-                    IconButton(onClick = { navController.popBackStack() }) { // ✅ Correct back button
+                    IconButton(onClick = { navController.popBackStack() }) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                             contentDescription = "Back"
@@ -115,7 +119,8 @@ fun BookDetailsScreen(navController: NavController) {
                             pagerState = pagerState
                         )
                         BookInfoSection(data)
-                        Spacer(modifier = Modifier.height(16.dp))
+                        LocationSection(data.location)
+                        OSMMapView()
                     } else {
                         Text(
                             text = book!!.message.toString(),
@@ -129,7 +134,25 @@ fun BookDetailsScreen(navController: NavController) {
             }
         },
         bottomBar = {
-          if (userId != book?.data?.sellerId) BuyButtons(userId, book?.data?.id,book?.data?.price, viewModel,navController)
+            if (bookId != book?.data?.sellerId) {
+                Card {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(16.dp),
+                        horizontalArrangement = Arrangement.SpaceEvenly
+                    ) {
+                        Button(
+                            onClick = {
+                                navController.navigate(ScreenNavigationItem.OrderPage.route + "/${bookId}")
+                            },
+                            modifier = Modifier
+                                .weight(1f)
+                                .padding(8.dp),
+                        ) { Text(text = "Buy Now", fontWeight = FontWeight.Bold) }
+                    }
+                }
+            }
         }
     )
 
@@ -177,88 +200,90 @@ fun BookImageCarousel(images: List<BookImage>, pagerState: PagerState) {
 
 @Composable
 fun BookInfoSection(book: Book) {
-    Column(modifier = Modifier.padding(16.dp)) {
-        Text(
-            text = book.title,
-            style = MaterialTheme.typography.bodyLarge,
-            fontWeight = FontWeight.Bold,
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(16.dp),
+        elevation = CardDefaults.elevatedCardElevation(4.dp)
+    ) {
+        Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(8.dp)
-        )
-        Text(
-            text = "Author: ${book.author}",
-            style = MaterialTheme.typography.bodyMedium,
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(8.dp)
-        )
-        Text(
-            text = "Price: ₹${book.price}",
-            style = MaterialTheme.typography.labelLarge,
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(8.dp)
-        )
-        Text(
-            text = "Condition: ${book.condition}",
-            style = MaterialTheme.typography.titleMedium,
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(8.dp)
-        )
-        Text(
-            text = "Description:",
-            style = MaterialTheme.typography.titleMedium,
-            fontWeight = FontWeight.Bold,
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(8.dp)
-        )
-        Text(
-            text = book.description.toString(),
-            style = MaterialTheme.typography.bodyMedium,
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(8.dp)
-        )
-        Spacer(modifier = Modifier.height(16.dp))
-        LocationSection(book.location)
+                .padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            Text(
+                text = book.title,
+                style = MaterialTheme.typography.titleLarge,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.primary
+            )
+
+            Text(
+                text = "Author: ${book.author}",
+                style = MaterialTheme.typography.bodyLarge
+            )
+
+
+            Text(
+                text = "Price: ₹${book.price}",
+                style = MaterialTheme.typography.bodyLarge,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.primary
+            )
+            Text(
+                text = "Condition: ${book.condition}",
+                style = MaterialTheme.typography.bodyLarge
+            )
+
+
+            Text(
+                text = "Description:",
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.Bold
+            )
+            Text(
+                text = book.description.toString(),
+                style = MaterialTheme.typography.bodyMedium
+            )
+        }
     }
 }
 
 @Composable
 fun LocationSection(location: Location?) {
-    Column {
-        Text(
-            text = "Seller Location",
-            style = MaterialTheme.typography.titleMedium,
-            fontWeight = FontWeight.Bold,
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(16.dp),
+        elevation = CardDefaults.elevatedCardElevation(4.dp)
+    ) {
+        Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(8.dp)
-        )
-        Text(
-            text = "City: ${location?.city ?: "N/A"}",
-            style = MaterialTheme.typography.bodyMedium,
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(8.dp)
-        )
-        Text(
-            text = "State: ${location?.state ?: "N/A"}",
-            style = MaterialTheme.typography.bodyMedium,
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(8.dp)
-        )
-        Text(
-            text = "Zip Code: ${location?.zipCode ?: "N/A"}",
-            style = MaterialTheme.typography.bodyMedium,
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(8.dp)
-        )
+                .padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(6.dp)
+        ) {
+            Text(
+                text = "Seller Location",
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.primary
+            )
+
+            Text(
+                text = "City: ${location?.city ?: "N/A"}",
+                style = MaterialTheme.typography.bodyMedium
+            )
+            Text(
+                text = "State: ${location?.state ?: "N/A"}",
+                style = MaterialTheme.typography.bodyMedium
+            )
+            Text(
+                text = "Zip Code: ${location?.zipCode ?: "N/A"}",
+                style = MaterialTheme.typography.bodyMedium
+            )
+        }
     }
 }
 
@@ -266,9 +291,8 @@ fun LocationSection(location: Location?) {
 fun FullScreenLoader(isLoading: Boolean) {
     if (isLoading) {
         Box(
-            modifier = Modifier
-                .fillMaxSize(),
-            contentAlignment = Alignment.Center // ✅ Center the loader on the screen
+            modifier = Modifier.fillMaxSize(),
+            contentAlignment = Alignment.Center
         ) {
             CircularProgressIndicator()
         }
@@ -277,51 +301,22 @@ fun FullScreenLoader(isLoading: Boolean) {
 
 
 @Composable
-fun BuyButtons(
-    userId: Int?,
-    id: Int?,
-    amount: Double?,
-    viewModel: UserViewModel,
-    navController: NavController
-) {
-    val context = LocalContext.current
-    var isLoading by remember { mutableStateOf(false) } // Track loading state
+fun OSMMapView() {
+    val singapore = LatLng(1.3521, 103.8198) // Example LatLng (Singapore)
+    val cameraPositionState = rememberCameraPositionState {
+        position = CameraPosition.fromLatLngZoom(singapore, 12f)
+    }
 
-    Card {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp),
-            horizontalArrangement = Arrangement.SpaceEvenly
-        ) {
-            Button(
-                onClick = {
-                    isLoading = true  // Show loading
-                    viewModel.viewModelScope.launch {
-                        val data =BuyReqModel(userId!!, id!!,amount!!)
-                        val response = viewModel.buyBook(data)
-                        isLoading = false
-                        if (response.status == ApiStatus.CREATED.code) {
-                            delay(2000)
-                            navController.navigateUp()
-                        } else {
-                            CoroutineScope(Dispatchers.Main).launch {
-                                Toast.makeText(context, "Failed to buy", Toast.LENGTH_SHORT).show()
-                            }
-                        }
-                    }
-                },
-                modifier = Modifier
-                    .weight(1f)
-                    .padding(8.dp),
-                enabled = !isLoading // Disable button when loading
-            ) {
-                if (isLoading) {
-                    CircularProgressIndicator(modifier = Modifier.size(24.dp), color = Color.White)
-                } else {
-                    Text(text = "Buy Now", fontWeight = FontWeight.Bold)
-                }
-            }
-        }
+    GoogleMap(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(400.dp),
+        cameraPositionState = cameraPositionState
+    ) {
+        Marker(
+            state = rememberMarkerState(position = singapore),
+            title = "Seller Location",
+            snippet = "This is the location of the seller"
+        )
     }
 }

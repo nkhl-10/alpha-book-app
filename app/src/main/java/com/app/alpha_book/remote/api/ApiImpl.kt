@@ -96,7 +96,7 @@ class ApiImpl : BaseApiService(), ApiInterface {
     }
 
     override suspend fun uploadUserImage(userId: Int, file: File): ApiResponse<String> {
-        val response: HttpResponse = KtorClient.client.post("$BASE_URL$UPLOAD_AVATAR_URL/") {
+        val response: HttpResponse = KtorClient.client.post("$BASE_URL$UPLOAD_AVATAR_URL") {
             contentType(ContentType.MultiPart.FormData)
             setBody(MultiPartFormDataContent(
                 formData {
@@ -120,6 +120,12 @@ class ApiImpl : BaseApiService(), ApiInterface {
     override suspend fun addAddress(address: Address): ApiResponse<String> {
        return safeApiCall {
             postRequest(ADDRESS_URL, address)
+        }
+    }
+
+    override suspend fun getAddress(userId: Int): ApiResponse<List<Address>> {
+        return safeApiCall {
+            getRequest("$ADDRESS_URL/$userId")
         }
     }
 

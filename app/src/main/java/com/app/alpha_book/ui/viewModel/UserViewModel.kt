@@ -25,6 +25,9 @@ class UserViewModel(private val api: ApiInterface) : ViewModel() {
     private val _bookListState = MutableStateFlow<List<Book>?>(null)
     val bookList: StateFlow<List<Book>?> = _bookListState
 
+    private val _addressListState = MutableStateFlow<List<Address>?>(null)
+    val addressListState: StateFlow<List<Address>?> = _addressListState
+
     private val _categoryListState = MutableStateFlow<List<Category>?>(null)
     val categoryList: StateFlow<List<Category>?> = _categoryListState
 
@@ -67,11 +70,25 @@ class UserViewModel(private val api: ApiInterface) : ViewModel() {
     }
 
     fun addAddress(address: Address) {
+        Log.i("DATAAPI", "Address: $address")
         viewModelScope.launch {
             try {
                 val response = api.addAddress(address)
                 Log.i("DATAAPI", "Address Added: $response")
             } catch (e: Exception) {
+                Log.e("DATAAPI", "Error fetching books: ${e.message}")
+            }
+        }
+    }
+
+    fun getAddress(userId: Int) {
+        viewModelScope.launch {
+            try {
+                val response = api.getAddress(userId)
+                _addressListState.value = response.data
+                Log.i("DATAAPI", "get Address: $response")
+            } catch (e: Exception) {
+                _addressListState.value = emptyList()
                 Log.e("DATAAPI", "Error fetching books: ${e.message}")
             }
         }
@@ -126,7 +143,9 @@ class UserViewModel(private val api: ApiInterface) : ViewModel() {
     fun getBookList(bookId: Int) {
         viewModelScope.launch {
             try {
+                Log.i("DATAAPI", "Book List: $bookId")
                 val response = api.getBook(bookId)
+                Log.i("DATAAPI", "Book List: $response")
                 _bookDetailsState.value = response
             } catch (e: Exception) {
                 _bookListState.value = null

@@ -65,6 +65,7 @@ dependencies {
 
     /*navigation*/
     implementation ("androidx.navigation:navigation-compose:2.8.7")
+    implementation("com.google.android.gms:play-services-location:21.3.0")
 
     testImplementation("junit:junit:4.13.2")
     androidTestImplementation("androidx.test.ext:junit:1.2.1")
@@ -107,5 +108,9 @@ dependencies {
 
     implementation("androidx.compose.material3:material3-adaptive-navigation-suite")
 
+
+
+    implementation("com.google.maps.android:maps-compose:2.11.4")
+    implementation("com.google.android.gms:play-services-maps:19.1.0")
 
 }

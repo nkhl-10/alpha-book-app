@@ -6,5 +6,6 @@ enum class Screen {
     SPLASH,
     REGISTER,
     BOOK_DETAILS,
-    CATEGORY_DETAILS
+    CATEGORY_DETAILS,
+    ORDER_PAGE
 }
