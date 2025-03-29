@@ -4,6 +4,7 @@ import android.content.ContentUris
 import android.content.Context
 import android.net.Uri
 import android.provider.MediaStore
+import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.result.launch
@@ -346,6 +347,7 @@ fun AddBookTabScreen(navController: NavController) {
                             images = getBytesFromUris(context, selectedImageUris),
                             sellerId = context.getIntData(USER.ID.name, 0)
                         )
+                        Log.i("TAG", "AddBookTabScreen: $book")
                         viewModel.uploadBook(book)
                     })
                 } else Text("Next")

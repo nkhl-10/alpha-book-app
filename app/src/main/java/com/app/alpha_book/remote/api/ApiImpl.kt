@@ -20,6 +20,7 @@ import com.app.alpha_book.ui.utils.LOGIN_URL
 import com.app.alpha_book.ui.utils.REGISTER_URL
 import com.app.alpha_book.ui.utils.SEARCH_CATEGORY_URL
 import com.app.alpha_book.ui.utils.UPLOAD_AVATAR_URL
+import com.app.alpha_book.ui.utils.UPLOAD_BOOKS_URL
 import com.app.alpha_book.ui.utils.USER_BY_BOOKS_URL
 import com.app.alpha_book.ui.utils.USER_BY_ORDERED_BOOKS_URL
 import com.app.alpha_book.ui.utils.USER_URL
@@ -47,37 +48,31 @@ class ApiImpl : BaseApiService(), ApiInterface {
             append("title", bookData.title)
             append("author", bookData.author)
             append("description", bookData.description)
-            append("category_id", bookData.categoryId.toString())
-            append("location_id", bookData.locationId.toString())
-            append("price", bookData.price.toString())
+            append("category", bookData.categoryId)
+            append("location", bookData.locationId)
+            append("price", bookData.price)
+            append("seller", bookData.sellerId)
             append("condition", bookData.condition)
             append("book_type", bookData.bookType)
             append("read_access", bookData.readAccess)
-            append("seller_id", bookData.sellerId.toString())
 
-            // Attach PDF file if available
             bookData.pdfFile?.let { pdfPath ->
                 val pdfFile = File(pdfPath)
                 append("pdf_file", pdfFile.readBytes(), Headers.build {
-                    append(
-                        HttpHeaders.ContentDisposition,
-                        "form-data; name=\"pdf_file\"; filename=\"${pdfFile.name}\""
-                    )
+                    append(HttpHeaders.ContentDisposition, "form-data; name=\"pdf_file\"; filename=\"${pdfFile.name}\"")
                     append(HttpHeaders.ContentType, ContentType.Application.Pdf.toString())
                 })
             }
 
-            // Attach image files
             bookData.images.forEachIndexed { index, it ->
                 append("images[$index]", it, Headers.build {
                     append(HttpHeaders.ContentDisposition, "form-data; name=\"images\"; filename=\"image_$index.jpg\"")
                     append(HttpHeaders.ContentType, ContentType.Image.JPEG.toString())
                 })
             }
-
         }
 
-        val request = postMultipartRequest("books", formData)
+        val request = postMultipartRequest(UPLOAD_BOOKS_URL, formData)
         return ApiResponse(
             status = request.status.value,
             data = null,
