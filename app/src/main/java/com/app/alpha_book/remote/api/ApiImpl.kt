@@ -4,6 +4,7 @@ import android.util.Log
 import com.app.alpha_book.model.Address
 import com.app.alpha_book.model.ApiResponse
 import com.app.alpha_book.model.Book
+import com.app.alpha_book.model.BookUploadModel
 import com.app.alpha_book.model.BuyReqModel
 import com.app.alpha_book.model.Category
 import com.app.alpha_book.model.LoginRequest
@@ -17,6 +18,7 @@ import com.app.alpha_book.ui.utils.BUY_BOOK_URL
 import com.app.alpha_book.ui.utils.CATEGORIES_URL
 import com.app.alpha_book.ui.utils.LOGIN_URL
 import com.app.alpha_book.ui.utils.REGISTER_URL
+import com.app.alpha_book.ui.utils.SEARCH_CATEGORY_URL
 import com.app.alpha_book.ui.utils.UPLOAD_AVATAR_URL
 import com.app.alpha_book.ui.utils.USER_BY_BOOKS_URL
 import com.app.alpha_book.ui.utils.USER_BY_ORDERED_BOOKS_URL
@@ -39,6 +41,72 @@ import kotlinx.serialization.json.JsonObject
 import java.io.File
 
 class ApiImpl : BaseApiService(), ApiInterface {
+
+    override suspend fun uploadBook(bookData: BookUploadModel): ApiResponse<String> {
+        val formData = formData {
+            append("title", bookData.title)
+            append("author", bookData.author)
+            append("description", bookData.description)
+            append("category_id", bookData.categoryId.toString())
+            append("location_id", bookData.locationId.toString())
+            append("price", bookData.price.toString())
+            append("condition", bookData.condition)
+            append("book_type", bookData.bookType)
+            append("read_access", bookData.readAccess)
+            append("seller_id", bookData.sellerId.toString())
+
+            // Attach PDF file if available
+            bookData.pdfFile?.let { pdfPath ->
+                val pdfFile = File(pdfPath)
+                append("pdf_file", pdfFile.readBytes(), Headers.build {
+                    append(
+                        HttpHeaders.ContentDisposition,
+                        "form-data; name=\"pdf_file\"; filename=\"${pdfFile.name}\""
+                    )
+                    append(HttpHeaders.ContentType, ContentType.Application.Pdf.toString())
+                })
+            }
+
+            // Attach image files
+            bookData.images.forEachIndexed { index, it ->
+                append("images[$index]", it, Headers.build {
+                    append(HttpHeaders.ContentDisposition, "form-data; name=\"images\"; filename=\"image_$index.jpg\"")
+                    append(HttpHeaders.ContentType, ContentType.Image.JPEG.toString())
+                })
+            }
+
+        }
+
+        val request = postMultipartRequest("books", formData)
+        return ApiResponse(
+            status = request.status.value,
+            data = null,
+            message = "Book Upload Successful"
+        )
+    }
+
+
+    override suspend fun uploadUserImage(userId: Int, file: File): ApiResponse<String> {
+        val response: HttpResponse = KtorClient.client.post("$BASE_URL$UPLOAD_AVATAR_URL") {
+            contentType(ContentType.MultiPart.FormData)
+            setBody(MultiPartFormDataContent(
+                formData {
+                    append("user_id", userId.toString())
+                    append("avatar", file.readBytes(), Headers.build {
+                        append(
+                            HttpHeaders.ContentDisposition,
+                            "form-data; name=\"avatar\"; filename=\"${file.name}\""
+                        )
+                    })
+                }
+            ))
+        }
+        return ApiResponse(
+            status = response.status.value,
+            data = null,
+            message = "Upload Successful"
+        )
+    }
 
     override suspend fun register(user: User): ApiResponse<User> =
         safeApiCall { postRequest(REGISTER_URL, user) }
@@ -95,30 +163,9 @@ class ApiImpl : BaseApiService(), ApiInterface {
         }
     }
 
-    override suspend fun uploadUserImage(userId: Int, file: File): ApiResponse<String> {
-        val response: HttpResponse = KtorClient.client.post("$BASE_URL$UPLOAD_AVATAR_URL") {
-            contentType(ContentType.MultiPart.FormData)
-            setBody(MultiPartFormDataContent(
-                formData {
-                    append("user_id", userId.toString())
-                    append("avatar", file.readBytes(), Headers.build {
-                        append(
-                            HttpHeaders.ContentDisposition,
-                            "form-data; name=\"avatar\"; filename=\"${file.name}\""
-                        )
-                    })
-                }
-            ))
-        }
-        return ApiResponse(
-            status = response.status.value,
-            data = null,
-            message = "Upload Successful"
-        )
-    }
 
     override suspend fun addAddress(address: Address): ApiResponse<String> {
-       return safeApiCall {
+        return safeApiCall {
             postRequest(ADDRESS_URL, address)
         }
     }
@@ -126,6 +173,12 @@ class ApiImpl : BaseApiService(), ApiInterface {
     override suspend fun getAddress(userId: Int): ApiResponse<List<Address>> {
         return safeApiCall {
             getRequest("$ADDRESS_URL/$userId")
+        }
+    }
+
+    override suspend fun searchCategories(query: String): ApiResponse<List<Category>> {
+        return safeApiCall {
+            getRequest("$SEARCH_CATEGORY_URL/?query=$query")
         }
     }
 

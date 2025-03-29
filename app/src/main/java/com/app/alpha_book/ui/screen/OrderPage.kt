@@ -35,13 +35,17 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.NavController
 import androidx.navigation.compose.currentBackStackEntryAsState
+import coil.compose.AsyncImage
+import com.app.alpha_book.R
 import com.app.alpha_book.model.Address
 import com.app.alpha_book.model.BuyReqModel
 import com.app.alpha_book.remote.api.ApiImpl
@@ -131,21 +135,30 @@ fun OrderScreen(navController: NavController) {
                         modifier = Modifier.fillMaxWidth(),
                         elevation = CardDefaults.cardElevation(4.dp)
                     ) {
-                        Column(
-                            modifier = Modifier.padding(16.dp),
-                            verticalArrangement = Arrangement.spacedBy(8.dp)
-                        ) {
-                            Text(
-                                text = "Book Title: ${book?.title}",
-                                fontSize = 18.sp,
-                                fontWeight = FontWeight.Bold
-                            )
-                            Text(text = "Author: ${book?.author}", fontSize = 16.sp)
-                            Text(
-                                text = "Price: ₹${book?.price}",
-                                fontSize = 16.sp,
-                                fontWeight = FontWeight.Bold
-                            )
+                        Row {
+                            book?.images?.get(0).let { url->
+                                AsyncImage(
+                                    model = url?.imageUrl,
+                                    contentDescription = "Book Image",
+                                    contentScale = ContentScale.Crop,
+                                    modifier = Modifier.size(100.dp),
+                                    placeholder = painterResource(R.drawable.placeholder),
+                                    error = painterResource(R.drawable.placeholder)
+                                )
+                            }
+                            Column(modifier = Modifier.padding(16.dp)) {
+                                Text(
+                                    text = "Book Title: ${book?.title}",
+                                    fontSize = 18.sp,
+                                    fontWeight = FontWeight.Bold
+                                )
+                                Text(text = "Author: ${book?.author}", fontSize = 16.sp)
+                                Text(
+                                    text = "Price: ₹${book?.price}",
+                                    fontSize = 16.sp,
+                                    fontWeight = FontWeight.Bold
+                                )
+                            }
                         }
                     }
                 }

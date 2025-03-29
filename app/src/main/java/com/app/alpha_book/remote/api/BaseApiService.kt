@@ -1,14 +1,12 @@
 package com.app.alpha_book.remote.api
 
 import com.app.alpha_book.ui.utils.BASE_URL
+import io.ktor.client.request.forms.MultiPartFormDataContent
 import io.ktor.client.request.get
 import io.ktor.client.request.post
 import io.ktor.client.request.setBody
 import io.ktor.client.statement.HttpResponse
-import io.ktor.util.InternalAPI
-
-
-
+import io.ktor.http.content.PartData
 
 abstract class BaseApiService {
     protected val client = KtorClient.client
@@ -25,4 +23,14 @@ abstract class BaseApiService {
             setBody(bodyData)
         }
     }
+
+    protected suspend fun postMultipartRequest(
+        url: String,
+        formData: List<PartData>
+    ): HttpResponse {
+        return client.post(BASE_URL + url) {
+            setBody(MultiPartFormDataContent(formData))
+        }
+    }
+
 }

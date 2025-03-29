@@ -3,6 +3,7 @@ package com.app.alpha_book.remote.api
 import com.app.alpha_book.model.Address
 import com.app.alpha_book.model.ApiResponse
 import com.app.alpha_book.model.Book
+import com.app.alpha_book.model.BookUploadModel
 import com.app.alpha_book.model.BuyReqModel
 import com.app.alpha_book.model.Category
 import com.app.alpha_book.model.LoginRequest
@@ -11,6 +12,8 @@ import com.app.alpha_book.model.User
 import java.io.File
 
 interface ApiInterface {
+    suspend fun uploadBook(bookData: BookUploadModel): ApiResponse<String>
+
     suspend fun register(user: User): ApiResponse<User>
 
     suspend fun login(credentials: LoginRequest): ApiResponse<TokenResponse>
@@ -42,4 +45,6 @@ interface ApiInterface {
     suspend fun addAddress(address: Address): ApiResponse<String>
 
     suspend fun getAddress(userId: Int): ApiResponse<List<Address>>
+
+    suspend fun searchCategories(query: String): ApiResponse<List<Category>>
 }

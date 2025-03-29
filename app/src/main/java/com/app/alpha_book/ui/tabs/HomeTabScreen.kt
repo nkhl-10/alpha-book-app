@@ -95,12 +95,12 @@ fun BookItems(books: Book, navController: NavController) {
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(160.dp),
-                    placeholder = painterResource(id = R.drawable.ic_launcher_background),
-                    error = painterResource(id = R.drawable.ic_launcher_background)
+                    placeholder = painterResource(R.drawable.placeholder),
+                    error = painterResource(R.drawable.placeholder)
                 )
             } else {
                 Image(
-                    painter = painterResource(id = R.drawable.ic_launcher_foreground), // ✅ Default placeholder
+                    painter = painterResource(id = R.drawable.placeholder), // ✅ Default placeholder
                     contentDescription = "Default Book Image",
                     contentScale = ContentScale.Crop,
                     modifier = Modifier

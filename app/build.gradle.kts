@@ -110,7 +110,7 @@ dependencies {
 
 
 
-    implementation("com.google.maps.android:maps-compose:2.11.4")
-    implementation("com.google.android.gms:play-services-maps:19.1.0")
+    implementation ("com.google.android.gms:play-services-maps:19.1.0")
+    implementation ("com.google.maps.android:maps-compose:2.14.0")
 
 }

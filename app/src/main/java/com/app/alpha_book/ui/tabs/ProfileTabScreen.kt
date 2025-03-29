@@ -30,7 +30,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -49,7 +48,6 @@ import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableDoubleStateOf
-import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -59,6 +57,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
@@ -68,12 +67,15 @@ import androidx.core.content.ContextCompat
 import androidx.core.net.toUri
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
+import com.app.alpha_book.R
 import com.app.alpha_book.model.Address
 import com.app.alpha_book.model.User
 import com.app.alpha_book.remote.api.ApiImpl
 import com.app.alpha_book.remote.api.ApiInterface
 import com.app.alpha_book.remote.sharedPreferences.USER
 import com.app.alpha_book.remote.sharedPreferences.getIntData
+import com.app.alpha_book.ui.navigation.HomeTabItem
+import com.app.alpha_book.ui.navigation.ScreenNavigationItem
 import com.app.alpha_book.ui.utils.ApiStatus
 import com.app.alpha_book.ui.viewModel.UserViewModel
 import com.google.android.gms.location.FusedLocationProviderClient
@@ -100,7 +102,7 @@ fun ProfileTabScreen(navController: NavController) {
     ) {
         if (user?.status == ApiStatus.SUCCESS.code) {
             user?.data?.let {
-                UserProfileCard(it, viewModel)
+                UserProfileCard(navController,it, viewModel)
                 BooksPager(navController, it.id)
             } ?: Text("Loading...")
 
@@ -113,7 +115,7 @@ fun ProfileTabScreen(navController: NavController) {
 
 
 @Composable
-fun UserProfileCard(user: User, viewModel: UserViewModel) {
+fun UserProfileCard(navController: NavController, user: User, viewModel: UserViewModel) {
 
     val context = LocalContext.current
     val imageUri = remember { mutableStateOf<Uri?>(null) }
@@ -159,7 +161,9 @@ fun UserProfileCard(user: User, viewModel: UserViewModel) {
                     modifier = Modifier
                         .size(120.dp)
                         .clip(CircleShape)
-                        .border(2.dp, Color.Gray, CircleShape)
+                        .border(2.dp, Color.Gray, CircleShape),
+                    placeholder = painterResource(R.drawable.placeholder),
+                    error = painterResource(R.drawable.placeholder)
                 )
                 IconButton(
                     onClick = { showDialog.value = true },
@@ -242,7 +246,9 @@ fun UserProfileCard(user: User, viewModel: UserViewModel) {
             Spacer(modifier = Modifier.width(18.dp))
 
             OutlinedButton(
-                onClick = {},
+                onClick = {
+                    navController.navigate(HomeTabItem.AddBook.route)
+                },
                 content = { Text("Add Book") },
                 modifier = Modifier.weight(1f)
             )

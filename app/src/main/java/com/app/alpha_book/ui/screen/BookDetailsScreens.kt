@@ -1,6 +1,10 @@
 package com.app.alpha_book.ui.screen
 
 import android.annotation.SuppressLint
+import android.util.Log
+import android.webkit.WebSettings
+import android.webkit.WebView
+import android.webkit.WebViewClient
 import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -42,6 +46,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
@@ -49,6 +54,7 @@ import androidx.lifecycle.viewModelScope
 import androidx.navigation.NavController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import coil.compose.AsyncImage
+import com.app.alpha_book.R
 import com.app.alpha_book.model.Book
 import com.app.alpha_book.model.BookImage
 import com.app.alpha_book.model.BuyReqModel
@@ -68,6 +74,7 @@ import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
 import com.google.maps.android.compose.GoogleMap
 import com.google.maps.android.compose.Marker
+import com.google.maps.android.compose.MarkerState
 import com.google.maps.android.compose.rememberCameraPositionState
 import com.google.maps.android.compose.rememberMarkerState
 
@@ -120,7 +127,13 @@ fun BookDetailsScreen(navController: NavController) {
                         )
                         BookInfoSection(data)
                         LocationSection(data.location)
-                        OSMMapView()
+
+                        data.location?.let {
+                            if (it.latitude != null && it.longitude != null) {
+                                GoogleMapView(LatLng(it.latitude, it.longitude))
+                            }
+                        }
+
                     } else {
                         Text(
                             text = book!!.message.toString(),
@@ -129,7 +142,6 @@ fun BookDetailsScreen(navController: NavController) {
                     }
 
                 }
-                    ?: FullScreenLoader(true)
                 FullScreenLoader(viewModel.isLoading.value)
             }
         },
@@ -170,7 +182,9 @@ fun BookImageCarousel(images: List<BookImage>, pagerState: PagerState) {
                 model = images[it].imageUrl,
                 contentDescription = "Book Image",
                 contentScale = ContentScale.Crop,
-                modifier = Modifier.fillMaxSize()
+                modifier = Modifier.fillMaxSize(),
+                placeholder = painterResource(R.drawable.placeholder),
+                error = painterResource(R.drawable.placeholder)
             )
         }
 
@@ -301,22 +315,24 @@ fun FullScreenLoader(isLoading: Boolean) {
 
 
 @Composable
-fun OSMMapView() {
-    val singapore = LatLng(1.3521, 103.8198) // Example LatLng (Singapore)
-    val cameraPositionState = rememberCameraPositionState {
-        position = CameraPosition.fromLatLngZoom(singapore, 12f)
-    }
-
-    GoogleMap(
+fun GoogleMapView(latLng: LatLng) {
+    Card(
         modifier = Modifier
             .fillMaxWidth()
-            .height(400.dp),
-        cameraPositionState = cameraPositionState
+            .padding(16.dp),
+        elevation = CardDefaults.elevatedCardElevation(4.dp)
     ) {
-        Marker(
-            state = rememberMarkerState(position = singapore),
-            title = "Seller Location",
-            snippet = "This is the location of the seller"
-        )
+        val cameraPositionState = rememberCameraPositionState {
+            position = CameraPosition.fromLatLngZoom(latLng, 16f)
+        }
+        GoogleMap(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(400.dp),
+            cameraPositionState = cameraPositionState
+        ) {
+            Marker(state = MarkerState(position = latLng))
+        }
     }
+
 }

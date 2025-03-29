@@ -6,6 +6,7 @@ import androidx.lifecycle.viewModelScope
 import com.app.alpha_book.model.Address
 import com.app.alpha_book.model.ApiResponse
 import com.app.alpha_book.model.Book
+import com.app.alpha_book.model.BookUploadModel
 import com.app.alpha_book.model.BuyReqModel
 import com.app.alpha_book.model.Category
 import com.app.alpha_book.model.LoginRequest
@@ -54,6 +55,24 @@ class UserViewModel(private val api: ApiInterface) : ViewModel() {
             }
             _uploadState.value = response
         }
+    }
+
+    fun  searchCategories(query: String){
+        viewModelScope.launch {
+            try {
+                val response = api.searchCategories(query)
+                _categoryListState.value = response.data
+            } catch (e: Exception) {
+                _categoryListState.value = emptyList()
+            }
+        }
+    }
+
+    fun uploadBook(bookUploadModel: BookUploadModel){
+            viewModelScope.launch {
+                val response = api.uploadBook(bookUploadModel)
+                _uploadState.value = response
+            }
     }
 
     fun getBookList() {
