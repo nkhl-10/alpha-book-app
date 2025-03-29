@@ -36,6 +36,7 @@ import androidx.compose.material.icons.filled.Folder
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
@@ -73,6 +74,7 @@ import com.app.alpha_book.model.Category
 import com.app.alpha_book.remote.api.ApiImpl
 import com.app.alpha_book.remote.sharedPreferences.USER
 import com.app.alpha_book.remote.sharedPreferences.getIntData
+import com.app.alpha_book.ui.navigation.HomeTabItem
 import com.app.alpha_book.ui.viewModel.UserViewModel
 import com.google.accompanist.pager.HorizontalPager
 import com.google.accompanist.pager.rememberPagerState
@@ -96,6 +98,8 @@ fun AddBookTabScreen(navController: NavController) {
     var selectedPdfUri by remember { mutableStateOf<Uri?>(null) }
     var selectedAddress by remember { mutableStateOf<Address?>(null) }
     var selectedCategory by remember { mutableStateOf<Category?>(null) }
+    var isLoading by remember { mutableStateOf(false) }
+
 
     var titleError by remember { mutableStateOf(false) }
     var authorError by remember { mutableStateOf(false) }
@@ -110,6 +114,17 @@ fun AddBookTabScreen(navController: NavController) {
     val pagerState = rememberPagerState()
     val scope = rememberCoroutineScope()
     val addressList by viewModel.addressListState.collectAsState()
+
+    if (isLoading) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(Color.Black.copy(alpha = 0.3f)),
+            contentAlignment = Alignment.Center
+        ) {
+            CircularProgressIndicator(color = Color.White)
+        }
+    }
 
     Column {
         HorizontalPager(
@@ -290,7 +305,7 @@ fun AddBookTabScreen(navController: NavController) {
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(16.dp),
-            horizontalArrangement = Arrangement.SpaceBetween
+            horizontalArrangement = Arrangement.SpaceBetween,
         ) {
             if (pagerState.currentPage != 0) {
                 if (pagerState.currentPage != pagerState.pageCount - 1) {
@@ -348,7 +363,10 @@ fun AddBookTabScreen(navController: NavController) {
                             sellerId = context.getIntData(USER.ID.name, 0)
                         )
                         Log.i("TAG", "AddBookTabScreen: $book")
+                        isLoading = true
                         viewModel.uploadBook(book)
+                        isLoading=false
+                        navController.navigate(HomeTabItem.Profile.route)
                     })
                 } else Text("Next")
             }

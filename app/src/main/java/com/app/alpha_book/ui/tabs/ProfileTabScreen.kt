@@ -84,7 +84,7 @@ import java.io.File
 import java.io.FileOutputStream
 
 @Composable
-fun ProfileTabScreen(navController: NavController) {
+fun ProfileTabScreen(mainNavController: NavController,navController:NavController) {
     val context = LocalContext.current
     val userApi: ApiInterface = ApiImpl()
     val viewModel = remember { UserViewModel(userApi) }
@@ -103,7 +103,7 @@ fun ProfileTabScreen(navController: NavController) {
         if (user?.status == ApiStatus.SUCCESS.code) {
             user?.data?.let {
                 UserProfileCard(navController,it, viewModel)
-                BooksPager(navController, it.id)
+                BooksPager(mainNavController, it.id)
             } ?: Text("Loading...")
 
         } else {

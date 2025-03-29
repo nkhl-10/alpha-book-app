@@ -18,8 +18,8 @@ fun HomeNavHost(navController: NavHostController,mainNavController: NavControlle
     NavHost(navController = navController, startDestination = HomeTabItem.Home.route, modifier = modifier) {
         composable(HomeTabItem.Home.route) { HomeTabScreen(mainNavController) }
         composable(HomeTabItem.Search.route) { SearchTabScreen(mainNavController) }
-        composable(HomeTabItem.Profile.route) { ProfileTabScreen(mainNavController) }
+        composable(HomeTabItem.Profile.route) { ProfileTabScreen(mainNavController,navController) }
         composable(HomeTabItem.Explore.route) { ExploreTabScreen(mainNavController) }
-        composable(HomeTabItem.AddBook.route) { AddBookTabScreen(mainNavController) }
+        composable(HomeTabItem.AddBook.route) { AddBookTabScreen(navController,) }
     }
 }

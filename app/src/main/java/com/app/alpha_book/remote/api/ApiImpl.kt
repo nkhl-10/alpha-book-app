@@ -27,7 +27,6 @@ import com.app.alpha_book.ui.utils.USER_URL
 import io.ktor.client.plugins.ClientRequestException
 import io.ktor.client.request.forms.MultiPartFormDataContent
 import io.ktor.client.request.forms.formData
-import io.ktor.client.request.forms.submitFormWithBinaryData
 import io.ktor.client.request.post
 import io.ktor.client.request.setBody
 import io.ktor.client.statement.*

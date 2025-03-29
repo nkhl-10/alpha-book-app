@@ -39,7 +39,7 @@ import com.app.alpha_book.ui.navigation.ScreenNavigationItem
 import com.app.alpha_book.ui.viewModel.UserViewModel
 
 @Composable
-fun HomeTabScreen(navController: NavController) {
+fun HomeTabScreen(mainNavController: NavController) {
     val userApi: ApiInterface = ApiImpl()
     val viewModel = remember { UserViewModel(userApi) }
     val bookList by viewModel.bookList.collectAsState()
@@ -50,7 +50,7 @@ fun HomeTabScreen(navController: NavController) {
         when {
             bookList == null -> Text(text = "Loading...")
             bookList!!.isEmpty() -> Text(text = "No books available")
-            else -> BookList(list = bookList.orEmpty(), navController)
+            else -> BookList(list = bookList.orEmpty(), mainNavController)
         }
     }
 }
