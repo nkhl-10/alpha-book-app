@@ -66,6 +66,7 @@ import com.app.alpha_book.remote.sharedPreferences.getIntData
 import com.app.alpha_book.ui.navigation.Argument
 import com.app.alpha_book.ui.navigation.ScreenNavigationItem
 import com.app.alpha_book.ui.utils.ApiStatus
+import com.app.alpha_book.ui.utils.CenterLoadingView
 import com.app.alpha_book.ui.viewModel.UserViewModel
 import com.google.accompanist.pager.HorizontalPager
 import com.google.accompanist.pager.PagerState
@@ -142,7 +143,7 @@ fun BookDetailsScreen(navController: NavController) {
                     }
 
                 }
-                FullScreenLoader(viewModel.isLoading.value)
+                if (viewModel.isLoading.value) CenterLoadingView()
             }
         },
         bottomBar = {
@@ -297,18 +298,6 @@ fun LocationSection(location: Location?) {
                 text = "Zip Code: ${location?.zipCode ?: "N/A"}",
                 style = MaterialTheme.typography.bodyMedium
             )
-        }
-    }
-}
-
-@Composable
-fun FullScreenLoader(isLoading: Boolean) {
-    if (isLoading) {
-        Box(
-            modifier = Modifier.fillMaxSize(),
-            contentAlignment = Alignment.Center
-        ) {
-            CircularProgressIndicator()
         }
     }
 }

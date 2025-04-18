@@ -27,6 +27,7 @@ import com.app.alpha_book.model.Category
 import com.app.alpha_book.remote.api.ApiImpl
 import com.app.alpha_book.remote.api.ApiInterface
 import com.app.alpha_book.ui.navigation.ScreenNavigationItem
+import com.app.alpha_book.ui.utils.CenterLoadingView
 import com.app.alpha_book.ui.viewModel.UserViewModel
 
 @Composable
@@ -39,7 +40,7 @@ fun ExploreTabScreen(navController: NavController) {
 
     Box(modifier = Modifier.fillMaxSize()) {
         when {
-            categoryList == null -> Text(text = "Loading...")
+            categoryList == null -> CenterLoadingView()
             categoryList!!.isEmpty() -> Text(text = "No books available")
             else -> CategoryList(list = categoryList.orEmpty(), navController)
         }

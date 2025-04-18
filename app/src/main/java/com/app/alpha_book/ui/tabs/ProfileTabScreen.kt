@@ -7,16 +7,18 @@ import android.graphics.Bitmap
 import android.location.Location
 import android.net.Uri
 import android.util.Log
+import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -30,9 +32,9 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -74,9 +76,8 @@ import com.app.alpha_book.remote.api.ApiImpl
 import com.app.alpha_book.remote.api.ApiInterface
 import com.app.alpha_book.remote.sharedPreferences.USER
 import com.app.alpha_book.remote.sharedPreferences.getIntData
-import com.app.alpha_book.ui.navigation.HomeTabItem
-import com.app.alpha_book.ui.navigation.ScreenNavigationItem
 import com.app.alpha_book.ui.utils.ApiStatus
+import com.app.alpha_book.ui.utils.CenterLoadingView
 import com.app.alpha_book.ui.viewModel.UserViewModel
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
@@ -84,7 +85,7 @@ import java.io.File
 import java.io.FileOutputStream
 
 @Composable
-fun ProfileTabScreen(mainNavController: NavController,navController:NavController) {
+fun ProfileTabScreen(mainNavController: NavController, navController: NavController) {
     val context = LocalContext.current
     val userApi: ApiInterface = ApiImpl()
     val viewModel = remember { UserViewModel(userApi) }
@@ -102,25 +103,24 @@ fun ProfileTabScreen(mainNavController: NavController,navController:NavControlle
     ) {
         if (user?.status == ApiStatus.SUCCESS.code) {
             user?.data?.let {
-                UserProfileCard(navController,it, viewModel)
+                UserProfileCard(it, viewModel)
                 BooksPager(mainNavController, it.id)
-            } ?: Text("Loading...")
+            } ?: CenterLoadingView()
 
-        } else {
-            Text(text = "Try Again!!")
-        }
+        } else CenterLoadingView()
 
     }
 }
 
 
 @Composable
-fun UserProfileCard(navController: NavController, user: User, viewModel: UserViewModel) {
+fun UserProfileCard(user: User, viewModel: UserViewModel) {
 
     val context = LocalContext.current
     val imageUri = remember { mutableStateOf<Uri?>(null) }
     val showDialog = remember { mutableStateOf(false) }
     val showDialogForAddAddress = remember { mutableStateOf(false) }
+    val showDialogForManageAddAddress = remember { mutableStateOf(false) }
     val pickImageLauncher =
         rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { uri ->
             uri?.let {
@@ -235,9 +235,7 @@ fun UserProfileCard(navController: NavController, user: User, viewModel: UserVie
             verticalAlignment = Alignment.CenterVertically
         ) {
             OutlinedButton(
-                onClick = {
-                    showDialogForAddAddress.value = true
-                },
+                onClick = { showDialogForAddAddress.value = true },
                 content = { Text("Add Address") },
                 modifier = Modifier.weight(1f)
             )
@@ -246,13 +244,12 @@ fun UserProfileCard(navController: NavController, user: User, viewModel: UserVie
             Spacer(modifier = Modifier.width(18.dp))
 
             OutlinedButton(
-                onClick = {
-                    navController.navigate(HomeTabItem.AddBook.route)
-                },
-                content = { Text("Add Book") },
+                onClick = { showDialogForManageAddAddress.value = true },
+                content = { Text("Manage Address") },
                 modifier = Modifier.weight(1f)
             )
 
+            ManageAddressDialog(showDialogForManageAddAddress, viewModel)
 
         }
     }
@@ -289,10 +286,7 @@ fun BooksPager(navController: NavController, id: Int) {
                             .fillMaxHeight()
                     ) {
                         when {
-                            bookList == null -> Text(
-                                text = "Loading...",
-                                modifier = Modifier.align(Alignment.Center)
-                            )
+                            bookList == null -> CenterLoadingView()
 
                             bookList!!.isEmpty() -> Text(
                                 text = "No books available",
@@ -315,11 +309,7 @@ fun BooksPager(navController: NavController, id: Int) {
                             .fillMaxHeight()
                     ) {
                         when {
-                            bookList == null -> Text(
-                                text = "Loading...",
-                                modifier = Modifier.align(Alignment.Center)
-                            )
-
+                            bookList == null -> CenterLoadingView()
                             bookList!!.isEmpty() -> Text(
                                 text = "No books available",
                                 modifier = Modifier.align(Alignment.Center)
@@ -355,6 +345,179 @@ fun uriToFile(context: Context, uri: Uri): File {
 }
 
 @Composable
+fun ManageAddressDialog(showDialog: MutableState<Boolean>, viewModel: UserViewModel) {
+    val context = LocalContext.current
+    val addressList by viewModel.addressListState.collectAsState()
+    val selectedAddress = remember { mutableStateOf<Address?>(null) }
+    val showEditDialog = remember { mutableStateOf(false) }
+
+
+    LaunchedEffect(Unit) {
+        val id = context.getIntData(USER.ID.name, 0)
+        viewModel.getAddress(id)
+    }
+
+    if (showDialog.value) {
+        AlertDialog(
+            onDismissRequest = { showDialog.value = false },
+            title = { Text(text = "Manage Address") },
+            text = {
+                Column {
+                    if (addressList?.isEmpty() == true) Text("No addresses available.")
+                    else addressList?.forEach { address ->
+                        val isSelected = selectedAddress.value?.id == address.id
+                        Card(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(vertical = 6.dp)
+                                .clickable { selectedAddress.value = address },
+                            colors = CardDefaults.cardColors(
+                                containerColor =
+                                if (isSelected) MaterialTheme.colorScheme.primaryContainer
+                                else MaterialTheme.colorScheme.surface
+                            ),
+                            elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+                        ) {
+                            Column(modifier = Modifier.padding(12.dp)) {
+                                Text(text = "Street: ${address.street}")
+                                Text(text = "City: ${address.city}")
+                                Text(text = "State: ${address.state}")
+                                Text(text = "ZIP: ${address.zip_code}")
+                            }
+                        }
+                    }
+                }
+            },
+            confirmButton = {
+                Row(
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    modifier = Modifier.padding(horizontal = 8.dp)
+                ) {
+
+
+                    TextButton(
+                        onClick = {
+                            selectedAddress.value?.let {
+                                showDialog.value = false
+                                showDialog.value = false
+                                showEditDialog.value = true
+                            }
+                        },
+                        enabled = selectedAddress.value != null
+                    ) { Text("Edit") }
+
+                    EditAddressDialog(
+                        showDialog = showEditDialog,
+                        addressToEdit = selectedAddress.value,
+                        addressId = selectedAddress.value?.id,
+                        viewModel = viewModel
+                    )
+
+                    TextButton(
+                        onClick = {
+                            selectedAddress.value?.let {
+                                viewModel.deleteAddress(it.id!!.toInt())
+                                showDialog.value = false
+                            }
+                        },
+                        enabled = selectedAddress.value != null,
+                        colors = ButtonDefaults.textButtonColors(
+                            contentColor = MaterialTheme.colorScheme.error
+                        )
+                    ) { Text("Delete") }
+                }
+            }
+        )
+    }
+}
+
+@Composable
+fun EditAddressDialog(
+    showDialog: MutableState<Boolean>,
+    addressToEdit: Address?,
+    viewModel: UserViewModel,
+    addressId: Int?
+) {
+    if (addressToEdit == null) return
+
+    val context = LocalContext.current
+    var street by remember { mutableStateOf("") }
+    var city by remember { mutableStateOf("") }
+    var state by remember { mutableStateOf("") }
+    var zipCode by remember { mutableStateOf("") }
+    var latitude by remember { mutableDoubleStateOf(0.0) }
+    var longitude by remember { mutableDoubleStateOf(0.0) }
+
+    // Prefill values whenever a new address is set
+    LaunchedEffect(addressToEdit) {
+        street = addressToEdit.street ?: ""
+        city = addressToEdit.city ?: ""
+        state = addressToEdit.state ?: ""
+        zipCode = addressToEdit.zip_code ?: ""
+        latitude = addressToEdit.latitude ?: 0.0
+        longitude = addressToEdit.longitude ?: 0.0
+    }
+
+    if (showDialog.value) {
+        AlertDialog(
+            onDismissRequest = { showDialog.value = false },
+            title = { Text("Edit Address") },
+            text = {
+                Column {
+                    OutlinedTextField(
+                        value = street,
+                        onValueChange = { street = it },
+                        label = { Text("Street") })
+                    Spacer(modifier = Modifier.height(8.dp))
+                    OutlinedTextField(
+                        value = city,
+                        onValueChange = { city = it },
+                        label = { Text("City") })
+                    Spacer(modifier = Modifier.height(8.dp))
+                    OutlinedTextField(
+                        value = state,
+                        onValueChange = { state = it },
+                        label = { Text("State") })
+                    Spacer(modifier = Modifier.height(8.dp))
+                    OutlinedTextField(
+                        value = zipCode,
+                        onValueChange = { zipCode = it },
+                        label = { Text("Zip Code") })
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text("Latitude: $latitude", fontSize = 14.sp, fontWeight = FontWeight.Bold)
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Text("Longitude: $longitude", fontSize = 14.sp, fontWeight = FontWeight.Bold)
+                }
+            },
+            confirmButton = {
+                Button(onClick = {
+                    showDialog.value = false
+                    val updated = addressToEdit.copy(
+                        street = street,
+                        city = city,
+                        state = state,
+                        zip_code = zipCode,
+                        latitude = latitude,
+                        longitude = longitude
+                    )
+                    if (addressId != null) {
+                        viewModel.editAddress(updated, addressId)
+                    } else Toast.makeText(context, "Something went wrong", Toast.LENGTH_SHORT)
+                        .show()
+
+                }) { Text("Update") }
+            },
+            dismissButton = {
+                TextButton(onClick = { showDialog.value = false }) {
+                    Text("Cancel")
+                }
+            }
+        )
+    }
+}
+
+
+@Composable
 fun AddAddressDialog(showDialog: MutableState<Boolean>, viewModel: UserViewModel) {
     val context = LocalContext.current
     var street by remember { mutableStateOf("") }
@@ -363,7 +526,7 @@ fun AddAddressDialog(showDialog: MutableState<Boolean>, viewModel: UserViewModel
     var zipCode by remember { mutableStateOf("") }
     var latitude by remember { mutableDoubleStateOf(0.0) }
     var longitude by remember { mutableDoubleStateOf(0.0) }
-    var isLoading by remember { mutableStateOf(false)  }
+    var isLoading by remember { mutableStateOf(false) }
     val fusedLocationClient = remember { LocationServices.getFusedLocationProviderClient(context) }
 
     if (showDialog.value) {
@@ -416,11 +579,19 @@ fun AddAddressDialog(showDialog: MutableState<Boolean>, viewModel: UserViewModel
                     ) {
                         Text("Fetch Location", fontSize = 16.sp)
                     }
-                    FullScreenLoader(isLoading)
+                    if (isLoading) CenterLoadingView()
                     Spacer(modifier = Modifier.height(8.dp))
-                    Text(text = "Latitude: $latitude", fontWeight = FontWeight.Bold, fontSize = 16.sp)
+                    Text(
+                        text = "Latitude: $latitude",
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 16.sp
+                    )
                     Spacer(modifier = Modifier.height(8.dp))
-                    Text(text = "Longitude: $longitude", fontWeight = FontWeight.Bold, fontSize = 16.sp)
+                    Text(
+                        text = "Longitude: $longitude",
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 16.sp
+                    )
 
                 }
             },
@@ -451,22 +622,18 @@ fun AddAddressDialog(showDialog: MutableState<Boolean>, viewModel: UserViewModel
     }
 }
 
-@Composable
-fun FullScreenLoader(isLoading: Boolean) {
-    if (isLoading) {
-        Box(
-            modifier = Modifier
-                .fillMaxSize(),
-            contentAlignment = Alignment.Center
-        ) {
-            CircularProgressIndicator()
-        }
-    }
-}
 
-fun getCurrentLocation(context: Context, fusedLocationClient: FusedLocationProviderClient, onLocationReceived: (Location?) -> Unit) {
+fun getCurrentLocation(
+    context: Context,
+    fusedLocationClient: FusedLocationProviderClient,
+    onLocationReceived: (Location?) -> Unit
+) {
 
-    if (ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+    if (ContextCompat.checkSelfPermission(
+            context,
+            Manifest.permission.ACCESS_FINE_LOCATION
+        ) == PackageManager.PERMISSION_GRANTED
+    ) {
         fusedLocationClient.lastLocation.addOnSuccessListener { location ->
             Log.e("Location", "get location: $location")
             onLocationReceived(location)

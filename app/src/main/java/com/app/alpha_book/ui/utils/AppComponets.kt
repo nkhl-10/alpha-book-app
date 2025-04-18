@@ -1,10 +1,17 @@
 package com.app.alpha_book.ui.utils
 
-const val BASE_URL ="http://192.168.90.172:8000/api/"
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+
+const val BASE_URL = "http://192.168.90.172:8000/api/"
 const val REGISTER_URL = "register"
 const val LOGIN_URL = "login"
 const val BOOKS_SEARCH_URL = "search"
-const val BUY_BOOK_URL= "buyBook"
+const val BUY_BOOK_URL = "buyBook"
 const val BOOKS_URL = "getBooks"
 const val UPLOAD_BOOKS_URL = "books"
 const val USER_URL = "users"
@@ -13,6 +20,7 @@ const val USER_BY_BOOKS_URL = "userByBooks"
 const val USER_BY_ORDERED_BOOKS_URL = "userByOrderedBooks"
 const val UPLOAD_AVATAR_URL = "uploadAvatar/"
 const val ADDRESS_URL = "addresses"
+const val ADDRESS_UPDATE_URL = "addressesUpdate"
 const val SEARCH_CATEGORY_URL = "searchCategories"
 
 enum class ApiStatus(val code: Int, val message: String) {
@@ -36,5 +44,15 @@ enum class ApiStatus(val code: Int, val message: String) {
         fun fromCode(code: Int): ApiStatus {
             return values().find { it.code == code } ?: INTERNAL_SERVER_ERROR
         }
+    }
+}
+
+@Composable
+fun CenterLoadingView() {
+    Box(
+        contentAlignment = Alignment.Center,
+        modifier = Modifier.fillMaxSize()
+    ) {
+        CircularProgressIndicator()
     }
 }

@@ -44,6 +44,10 @@ interface ApiInterface {
 
     suspend fun addAddress(address: Address): ApiResponse<String>
 
+    suspend fun editAddress(address: Address,addressId: Int): ApiResponse<String>
+
+    suspend fun deleteAddress(addressId: Int): ApiResponse<String>
+
     suspend fun getAddress(userId: Int): ApiResponse<List<Address>>
 
     suspend fun searchCategories(query: String): ApiResponse<List<Category>>

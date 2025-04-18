@@ -57,7 +57,7 @@ class UserViewModel(private val api: ApiInterface) : ViewModel() {
         }
     }
 
-    fun  searchCategories(query: String){
+    fun searchCategories(query: String) {
         viewModelScope.launch {
             try {
                 val response = api.searchCategories(query)
@@ -68,11 +68,11 @@ class UserViewModel(private val api: ApiInterface) : ViewModel() {
         }
     }
 
-    fun uploadBook(bookUploadModel: BookUploadModel){
-            viewModelScope.launch {
-                val response = api.uploadBook(bookUploadModel)
-                _uploadState.value = response
-            }
+    fun uploadBook(bookUploadModel: BookUploadModel) {
+        viewModelScope.launch {
+            val response = api.uploadBook(bookUploadModel)
+            _uploadState.value = response
+        }
     }
 
     fun getBookList() {
@@ -80,22 +80,46 @@ class UserViewModel(private val api: ApiInterface) : ViewModel() {
             try {
                 val response = api.getBook()
                 _bookListState.value = response.data
-                Log.i("DATAAPI", "Book List: $response")
+                Log.i(TAG, "Book List: $response")
             } catch (e: Exception) {
-                Log.e("DATAAPI", "Error fetching books: ${e.message}")
+                Log.e(TAG, "Error fetching books: ${e.message}")
                 _bookListState.value = emptyList()
             }
         }
     }
 
     fun addAddress(address: Address) {
-        Log.i("DATAAPI", "Address: $address")
+        Log.i(TAG, "Address: $address")
         viewModelScope.launch {
             try {
                 val response = api.addAddress(address)
-                Log.i("DATAAPI", "Address Added: $response")
+                Log.i(TAG, "Address Added: $response")
             } catch (e: Exception) {
-                Log.e("DATAAPI", "Error fetching books: ${e.message}")
+                Log.e(TAG, "Error fetching books: ${e.message}")
+            }
+        }
+    }
+
+    fun editAddress(address: Address, addressId: Int) {
+        Log.i(TAG, "Address: $address")
+        viewModelScope.launch {
+            try {
+                val response = api.editAddress(address, addressId)
+                Log.i(TAG, "Address Added: $response")
+            } catch (e: Exception) {
+                Log.e(TAG, "Error fetching books: ${e.message}")
+            }
+        }
+    }
+
+    fun deleteAddress(addressId: Int) {
+        Log.i(TAG, "Address: $addressId")
+        viewModelScope.launch {
+            try {
+                val response = api.deleteAddress(addressId)
+                Log.i(TAG, "Address Added: $response")
+            } catch (e: Exception) {
+                Log.e(TAG, "Error fetching books: ${e.message}")
             }
         }
     }
@@ -105,10 +129,10 @@ class UserViewModel(private val api: ApiInterface) : ViewModel() {
             try {
                 val response = api.getAddress(userId)
                 _addressListState.value = response.data
-                Log.i("DATAAPI", "get Address: $response")
+                Log.i(TAG, "get Address: $response")
             } catch (e: Exception) {
                 _addressListState.value = emptyList()
-                Log.e("DATAAPI", "Error fetching books: ${e.message}")
+                Log.e(TAG, "Error fetching books: ${e.message}")
             }
         }
     }
@@ -162,9 +186,9 @@ class UserViewModel(private val api: ApiInterface) : ViewModel() {
     fun getBookList(bookId: Int) {
         viewModelScope.launch {
             try {
-                Log.i("DATAAPI", "Book List: $bookId")
+                Log.i(TAG, "Book List: $bookId")
                 val response = api.getBook(bookId)
-                Log.i("DATAAPI", "Book List: $response")
+                Log.i(TAG, "Book List: $response")
                 _bookDetailsState.value = response
             } catch (e: Exception) {
                 _bookListState.value = null
@@ -207,5 +231,7 @@ class UserViewModel(private val api: ApiInterface) : ViewModel() {
         }
     }
 
-
+    companion object {
+        private const val TAG = "UserViewModelAPI"
+    }
 }

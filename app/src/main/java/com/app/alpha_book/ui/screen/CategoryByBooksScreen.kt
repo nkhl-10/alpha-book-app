@@ -27,6 +27,7 @@ import com.app.alpha_book.remote.api.ApiImpl
 import com.app.alpha_book.remote.api.ApiInterface
 import com.app.alpha_book.ui.navigation.Argument
 import com.app.alpha_book.ui.tabs.BookList
+import com.app.alpha_book.ui.utils.CenterLoadingView
 import com.app.alpha_book.ui.viewModel.UserViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -67,7 +68,7 @@ fun CategoryByBooks(navController: NavController) {
                 .fillMaxSize()
                 .padding(paddingValues)) {
                 when {
-                    bookList == null -> Text(text = "Loading...")
+                    bookList == null -> CenterLoadingView()
                     bookList!!.isEmpty() -> Text(text = "No books available")
                     else -> BookList(list = bookList.orEmpty(), navController)
                 }

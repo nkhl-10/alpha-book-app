@@ -36,6 +36,7 @@ import com.app.alpha_book.model.Book
 import com.app.alpha_book.remote.api.ApiImpl
 import com.app.alpha_book.remote.api.ApiInterface
 import com.app.alpha_book.ui.navigation.ScreenNavigationItem
+import com.app.alpha_book.ui.utils.CenterLoadingView
 import com.app.alpha_book.ui.viewModel.UserViewModel
 
 @Composable
@@ -48,7 +49,7 @@ fun HomeTabScreen(mainNavController: NavController) {
 
     Box(modifier = Modifier.fillMaxSize()) {
         when {
-            bookList == null -> Text(text = "Loading...")
+            bookList == null -> CenterLoadingView()
             bookList!!.isEmpty() -> Text(text = "No books available")
             else -> BookList(list = bookList.orEmpty(), mainNavController)
         }
