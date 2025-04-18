@@ -81,6 +81,7 @@ import com.app.alpha_book.ui.utils.CenterLoadingView
 import com.app.alpha_book.ui.viewModel.UserViewModel
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
+import kotlinx.coroutines.delay
 import java.io.File
 import java.io.FileOutputStream
 
@@ -148,7 +149,7 @@ fun UserProfileCard(user: User, viewModel: UserViewModel) {
     ) {
         Row(
             modifier = Modifier
-                .padding(16.dp)
+                .padding(8.dp)
                 .fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically
         ) {
@@ -230,7 +231,7 @@ fun UserProfileCard(user: User, viewModel: UserViewModel) {
 
         Row(
             modifier = Modifier
-                .padding(16.dp)
+                .padding(8.dp)
                 .fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically
         ) {
@@ -393,13 +394,9 @@ fun ManageAddressDialog(showDialog: MutableState<Boolean>, viewModel: UserViewMo
                     horizontalArrangement = Arrangement.SpaceBetween,
                     modifier = Modifier.padding(horizontal = 8.dp)
                 ) {
-
-
                     TextButton(
                         onClick = {
                             selectedAddress.value?.let {
-                                showDialog.value = false
-                                showDialog.value = false
                                 showEditDialog.value = true
                             }
                         },
@@ -417,6 +414,9 @@ fun ManageAddressDialog(showDialog: MutableState<Boolean>, viewModel: UserViewMo
                         onClick = {
                             selectedAddress.value?.let {
                                 viewModel.deleteAddress(it.id!!.toInt())
+                                val id = context.getIntData(USER.ID.name, 0)
+                                viewModel.getAddress(id)
+                                selectedAddress.value = null
                                 showDialog.value = false
                             }
                         },
@@ -432,12 +432,7 @@ fun ManageAddressDialog(showDialog: MutableState<Boolean>, viewModel: UserViewMo
 }
 
 @Composable
-fun EditAddressDialog(
-    showDialog: MutableState<Boolean>,
-    addressToEdit: Address?,
-    viewModel: UserViewModel,
-    addressId: Int?
-) {
+fun EditAddressDialog(showDialog: MutableState<Boolean>, addressToEdit: Address?, viewModel: UserViewModel, addressId: Int?) {
     if (addressToEdit == null) return
 
     val context = LocalContext.current
@@ -451,8 +446,8 @@ fun EditAddressDialog(
     // Prefill values whenever a new address is set
     LaunchedEffect(addressToEdit) {
         street = addressToEdit.street ?: ""
-        city = addressToEdit.city ?: ""
-        state = addressToEdit.state ?: ""
+        city = addressToEdit.city
+        state = addressToEdit.state
         zipCode = addressToEdit.zip_code ?: ""
         latitude = addressToEdit.latitude ?: 0.0
         longitude = addressToEdit.longitude ?: 0.0
@@ -502,6 +497,8 @@ fun EditAddressDialog(
                     )
                     if (addressId != null) {
                         viewModel.editAddress(updated, addressId)
+                        val userId = context.getIntData(USER.ID.name, 0)
+                        viewModel.getAddress(userId)
                     } else Toast.makeText(context, "Something went wrong", Toast.LENGTH_SHORT)
                         .show()
 
@@ -597,7 +594,6 @@ fun AddAddressDialog(showDialog: MutableState<Boolean>, viewModel: UserViewModel
             },
             confirmButton = {
                 Button(onClick = {
-                    showDialog.value = false
                     val id = context.getIntData(USER.ID.name, 0)
                     val address = Address(
                         user = id,
@@ -609,6 +605,7 @@ fun AddAddressDialog(showDialog: MutableState<Boolean>, viewModel: UserViewModel
                         longitude = longitude
                     )
                     viewModel.addAddress(address)
+                    showDialog.value = false
                 }) {
                     Text("Save")
                 }

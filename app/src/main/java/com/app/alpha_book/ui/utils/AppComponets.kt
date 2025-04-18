@@ -19,8 +19,9 @@ const val CATEGORIES_URL = "categories"
 const val USER_BY_BOOKS_URL = "userByBooks"
 const val USER_BY_ORDERED_BOOKS_URL = "userByOrderedBooks"
 const val UPLOAD_AVATAR_URL = "uploadAvatar/"
-const val ADDRESS_URL = "addresses"
+const val ADDRESS_URL = "addresses/"
 const val ADDRESS_UPDATE_URL = "addressesUpdate"
+const val ADDRESS_DELETE_URL = "addressesDelete"
 const val SEARCH_CATEGORY_URL = "searchCategories"
 
 enum class ApiStatus(val code: Int, val message: String) {

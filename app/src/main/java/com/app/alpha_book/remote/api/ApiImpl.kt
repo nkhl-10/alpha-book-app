@@ -10,6 +10,7 @@ import com.app.alpha_book.model.Category
 import com.app.alpha_book.model.LoginRequest
 import com.app.alpha_book.model.TokenResponse
 import com.app.alpha_book.model.User
+import com.app.alpha_book.ui.utils.ADDRESS_DELETE_URL
 import com.app.alpha_book.ui.utils.ADDRESS_UPDATE_URL
 import com.app.alpha_book.ui.utils.ADDRESS_URL
 import com.app.alpha_book.ui.utils.BASE_URL
@@ -173,13 +174,13 @@ class ApiImpl : BaseApiService(), ApiInterface {
 
     override suspend fun deleteAddress(addressId: Int): ApiResponse<String> {
         return safeApiCall {
-            deleteRequest("$ADDRESS_URL/$addressId")
+            deleteRequest("$ADDRESS_DELETE_URL/$addressId/")
         }
     }
 
     override suspend fun getAddress(userId: Int): ApiResponse<List<Address>> {
         return safeApiCall {
-            getRequest("$ADDRESS_URL/$userId")
+            getRequest("$ADDRESS_URL$userId")
         }
     }
 
