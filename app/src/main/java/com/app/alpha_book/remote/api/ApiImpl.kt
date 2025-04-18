@@ -9,6 +9,7 @@ import com.app.alpha_book.model.BuyReqModel
 import com.app.alpha_book.model.Category
 import com.app.alpha_book.model.LoginRequest
 import com.app.alpha_book.model.TokenResponse
+import com.app.alpha_book.model.Transaction
 import com.app.alpha_book.model.User
 import com.app.alpha_book.ui.utils.ADDRESS_DELETE_URL
 import com.app.alpha_book.ui.utils.ADDRESS_UPDATE_URL
@@ -21,6 +22,8 @@ import com.app.alpha_book.ui.utils.CATEGORIES_URL
 import com.app.alpha_book.ui.utils.LOGIN_URL
 import com.app.alpha_book.ui.utils.REGISTER_URL
 import com.app.alpha_book.ui.utils.SEARCH_CATEGORY_URL
+import com.app.alpha_book.ui.utils.SOLD_BY_USER_BOOK
+import com.app.alpha_book.ui.utils.TRANSACTION_URL
 import com.app.alpha_book.ui.utils.UPLOAD_AVATAR_URL
 import com.app.alpha_book.ui.utils.UPLOAD_BOOKS_URL
 import com.app.alpha_book.ui.utils.USER_BY_BOOKS_URL
@@ -215,8 +218,18 @@ class ApiImpl : BaseApiService(), ApiInterface {
         getRequest("$USER_BY_BOOKS_URL/$bookId")
     }
 
-    override suspend fun getUserByOrderedBooks(userId: Int): ApiResponse<List<Book>> = safeApiCall {
+    override suspend fun soldByUserBook(bookId: Int): ApiResponse<List<Transaction>> =
+        safeApiCall {
+            getRequest("$SOLD_BY_USER_BOOK/$bookId")
+        }
+
+
+    override suspend fun getUserByOrderedBooks(userId: Int): ApiResponse<List<Transaction>> = safeApiCall {
         getRequest("$USER_BY_ORDERED_BOOKS_URL/$userId")
+    }
+
+    override suspend fun getTransaction(transactionId: Int): ApiResponse<Transaction> = safeApiCall {
+        getRequest("$TRANSACTION_URL/$transactionId")
     }
 }
 

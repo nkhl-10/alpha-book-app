@@ -258,8 +258,8 @@ fun UserProfileCard(user: User, viewModel: UserViewModel) {
 
 @Composable
 fun BooksPager(navController: NavController, id: Int) {
-    val pagerState = rememberPagerState(pageCount = { 2 })
-    val tabTitles = listOf("Your Books", "Ordered Books")
+    val pagerState = rememberPagerState(pageCount = { 3 })
+    val tabTitles = listOf("Your Books", "Ordered Books", "Sold Book")
     TabRow(selectedTabIndex = pagerState.currentPage) {
         tabTitles.forEachIndexed { index, title ->
             Tab(
@@ -272,20 +272,13 @@ fun BooksPager(navController: NavController, id: Int) {
     Column {
         HorizontalPager(state = pagerState) { page ->
 
-
             val userApi: ApiInterface = ApiImpl()
             val viewModel = remember { UserViewModel(userApi) }
             when (page) {
                 0 -> {
                     val bookList by viewModel.bookList.collectAsState()
-
                     LaunchedEffect(Unit) { viewModel.getUserByBookList(id) }
-
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .fillMaxHeight()
-                    ) {
+                    Box(modifier = Modifier.fillMaxWidth().fillMaxHeight()) {
                         when {
                             bookList == null -> CenterLoadingView()
 
@@ -300,23 +293,30 @@ fun BooksPager(navController: NavController, id: Int) {
                 }
 
                 1 -> {
-                    val bookList by viewModel.bookList.collectAsState()
-
+                    val bookList by viewModel.transactionList.collectAsState()
                     LaunchedEffect(Unit) { viewModel.getOrderedByBookList(id) }
-
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .fillMaxHeight()
-                    ) {
+                    Box(modifier = Modifier.fillMaxWidth().fillMaxHeight()) {
                         when {
                             bookList == null -> CenterLoadingView()
                             bookList!!.isEmpty() -> Text(
                                 text = "No books available",
                                 modifier = Modifier.align(Alignment.Center)
                             )
-
-                            else -> BookList(list = bookList.orEmpty(), navController)
+                            else -> BookListRow(list = bookList.orEmpty(),false,navController)
+                        }
+                    }
+                }
+                2 -> {
+                    val bookList by viewModel.transactionList.collectAsState()
+                    LaunchedEffect(Unit) { viewModel.soldByUserBookList(id) }
+                    Box(modifier = Modifier.fillMaxWidth().fillMaxHeight()) {
+                        when {
+                            bookList == null -> CenterLoadingView()
+                            bookList!!.isEmpty() -> Text(
+                                text = "No books available",
+                                modifier = Modifier.align(Alignment.Center)
+                            )
+                            else -> BookListRow(list = bookList.orEmpty(),true,navController)
                         }
                     }
                 }
@@ -432,7 +432,12 @@ fun ManageAddressDialog(showDialog: MutableState<Boolean>, viewModel: UserViewMo
 }
 
 @Composable
-fun EditAddressDialog(showDialog: MutableState<Boolean>, addressToEdit: Address?, viewModel: UserViewModel, addressId: Int?) {
+fun EditAddressDialog(
+    showDialog: MutableState<Boolean>,
+    addressToEdit: Address?,
+    viewModel: UserViewModel,
+    addressId: Int?
+) {
     if (addressToEdit == null) return
 
     val context = LocalContext.current

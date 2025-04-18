@@ -1,17 +1,11 @@
 package com.app.alpha_book.ui.screen
 
 import android.annotation.SuppressLint
-import android.util.Log
-import android.webkit.WebSettings
-import android.webkit.WebView
-import android.webkit.WebViewClient
-import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -26,7 +20,6 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CenterAlignedTopAppBar
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -37,32 +30,24 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.viewinterop.AndroidView
-import androidx.lifecycle.viewModelScope
 import androidx.navigation.NavController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import coil.compose.AsyncImage
 import com.app.alpha_book.R
 import com.app.alpha_book.model.Book
 import com.app.alpha_book.model.BookImage
-import com.app.alpha_book.model.BuyReqModel
 import com.app.alpha_book.model.Location
 import com.app.alpha_book.remote.api.ApiImpl
 import com.app.alpha_book.remote.api.ApiInterface
-import com.app.alpha_book.remote.sharedPreferences.USER
-import com.app.alpha_book.remote.sharedPreferences.getIntData
 import com.app.alpha_book.ui.navigation.Argument
 import com.app.alpha_book.ui.navigation.ScreenNavigationItem
 import com.app.alpha_book.ui.utils.ApiStatus
@@ -77,7 +62,6 @@ import com.google.maps.android.compose.GoogleMap
 import com.google.maps.android.compose.Marker
 import com.google.maps.android.compose.MarkerState
 import com.google.maps.android.compose.rememberCameraPositionState
-import com.google.maps.android.compose.rememberMarkerState
 
 @OptIn(ExperimentalMaterial3Api::class)
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter", "StateFlowValueCalledInComposition")
@@ -86,6 +70,7 @@ fun BookDetailsScreen(navController: NavController) {
 
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val bookId = navBackStackEntry?.arguments?.getInt(Argument.BOOK_ID.name)
+    val isProfile = navBackStackEntry?.arguments?.getBoolean(Argument.IS_PROFILE.name)
     if (bookId == null) {
         Text(text = "Invalid Book ID", color = Color.Red)
         return
@@ -147,25 +132,28 @@ fun BookDetailsScreen(navController: NavController) {
             }
         },
         bottomBar = {
-            if (bookId != book?.data?.sellerId) {
-                Card {
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(16.dp),
-                        horizontalArrangement = Arrangement.SpaceEvenly
-                    ) {
-                        Button(
-                            onClick = {
-                                navController.navigate(ScreenNavigationItem.OrderPage.route + "/${bookId}")
-                            },
+            if (!isProfile!!){
+                if (bookId != book?.data?.sellerId) {
+                    Card {
+                        Row(
                             modifier = Modifier
-                                .weight(1f)
-                                .padding(8.dp),
-                        ) { Text(text = "Buy Now", fontWeight = FontWeight.Bold) }
+                                .fillMaxWidth()
+                                .padding(16.dp),
+                            horizontalArrangement = Arrangement.SpaceEvenly
+                        ) {
+                            Button(
+                                onClick = {
+                                    navController.navigate(ScreenNavigationItem.OrderPage.route + "/${bookId}")
+                                },
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .padding(8.dp),
+                            ) { Text(text = "Buy Now", fontWeight = FontWeight.Bold) }
+                        }
                     }
                 }
             }
+
         }
     )
 

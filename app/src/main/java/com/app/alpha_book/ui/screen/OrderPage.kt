@@ -136,7 +136,7 @@ fun OrderScreen(navController: NavController) {
                         elevation = CardDefaults.cardElevation(4.dp)
                     ) {
                         Row {
-                            book?.images?.get(0).let { url->
+                            book?.images?.get(0).let { url ->
                                 AsyncImage(
                                     model = url?.imageUrl,
                                     contentDescription = "Book Image",
@@ -245,11 +245,11 @@ fun BuyButtons(
                 enabled = !isLoading,
                 modifier = Modifier.fillMaxWidth()
             ) {
-                if (isLoading) {
-                    CircularProgressIndicator(modifier = Modifier.size(24.dp), color = Color.White)
-                } else {
-                    Text(text = "Confirm Order", fontWeight = FontWeight.Bold)
-                }
+                if (isLoading) CircularProgressIndicator(
+                    modifier = Modifier.size(24.dp),
+                    color = Color.White
+                )
+                else Text(text = "Confirm Order", fontWeight = FontWeight.Bold)
             }
         }
     }

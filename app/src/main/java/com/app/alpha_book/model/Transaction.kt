@@ -1,10 +1,15 @@
 package com.app.alpha_book.model
 
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
+
+@Serializable
 data class Transaction(
     val id: Int,
-    val bookId: Int,
-    val buyerId: Int,
+    val book: Book,
+    val buyer: User,
     val amount: Double,
     val status: String,
-    val transactionDate: Long
+    @SerialName("transaction_date") val transactionDate: String,
+    val otp :Int
 )

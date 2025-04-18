@@ -7,5 +7,6 @@ enum class Screen {
     REGISTER,
     BOOK_DETAILS,
     CATEGORY_DETAILS,
-    ORDER_PAGE
+    ORDER_PAGE,
+    TRANSACTION
 }

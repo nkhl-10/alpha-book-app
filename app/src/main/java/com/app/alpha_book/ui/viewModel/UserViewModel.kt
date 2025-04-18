@@ -11,6 +11,7 @@ import com.app.alpha_book.model.BuyReqModel
 import com.app.alpha_book.model.Category
 import com.app.alpha_book.model.LoginRequest
 import com.app.alpha_book.model.TokenResponse
+import com.app.alpha_book.model.Transaction
 import com.app.alpha_book.model.User
 import com.app.alpha_book.remote.api.ApiInterface
 import com.app.alpha_book.ui.utils.ApiStatus
@@ -22,6 +23,9 @@ import java.io.File
 
 class UserViewModel(private val api: ApiInterface) : ViewModel() {
 
+
+    private val _transactionListState = MutableStateFlow<List<Transaction>?>(null)
+    val transactionList: StateFlow<List<Transaction>?> = _transactionListState
 
     private val _bookListState = MutableStateFlow<List<Book>?>(null)
     val bookList: StateFlow<List<Book>?> = _bookListState
@@ -175,9 +179,31 @@ class UserViewModel(private val api: ApiInterface) : ViewModel() {
         viewModelScope.launch {
             try {
                 val response = api.getUserByOrderedBooks(bookId)
-                _bookListState.value = response.data
+                _transactionListState.value = response.data
             } catch (e: Exception) {
-                _bookListState.value = null
+                _transactionListState.value = null
+            }
+        }
+    }
+
+    fun soldByUserBookList(bookId: Int) {
+        viewModelScope.launch {
+            try {
+                val response = api.soldByUserBook(bookId)
+                _transactionListState.value = response.data
+            } catch (e: Exception) {
+                _transactionListState.value = null
+            }
+        }
+    }
+
+    fun getTransaction(transactionId: Int) {
+        viewModelScope.launch {
+            try {
+                val response = api.getTransaction(transactionId)
+                _transactionListState.value = listOf(response.data!!)
+            } catch (e: Exception) {
+                _transactionListState.value = null
             }
         }
     }

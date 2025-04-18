@@ -5,13 +5,17 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -24,6 +28,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -33,6 +38,7 @@ import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.app.alpha_book.R
 import com.app.alpha_book.model.Book
+import com.app.alpha_book.model.Transaction
 import com.app.alpha_book.remote.api.ApiImpl
 import com.app.alpha_book.remote.api.ApiInterface
 import com.app.alpha_book.ui.navigation.ScreenNavigationItem
@@ -77,7 +83,7 @@ fun BookItems(books: Book, navController: NavController) {
             .fillMaxSize()
             .padding(4.dp)
             .clickable {
-                navController.navigate(ScreenNavigationItem.BookDetails.route+"/${books.id}")
+                navController.navigate(ScreenNavigationItem.BookDetails.route + "/${books.id}/" + false)
             },
         shape = RoundedCornerShape(6.dp),
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
@@ -131,4 +137,81 @@ fun BookItems(books: Book, navController: NavController) {
             )
         }
     }
+}
+
+
+@Composable
+fun BookListRowItem(
+    transaction: Transaction,
+    isSellerPage: Boolean = false,
+    navController: NavController?
+) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(6.dp)
+            .clickable {
+                navController?.navigate(ScreenNavigationItem.TransactionScreen.route + "/${transaction.id}/" + "$isSellerPage")
+            },
+        shape = RoundedCornerShape(8.dp),
+        elevation = CardDefaults.cardElevation(4.dp)
+    ) {
+        Row(modifier = Modifier.padding(8.dp)) {
+            // Book Image - Left Side
+            if (!transaction.book.images.isNullOrEmpty()) {
+                AsyncImage(
+                    model = ImageRequest.Builder(LocalContext.current)
+                        .data(transaction.book.images[0].imageUrl)
+                        .crossfade(true)
+                        .build(),
+                    contentDescription = "Book Image",
+                    contentScale = ContentScale.Crop,
+                    modifier = Modifier
+                        .size(90.dp)
+                        .clip(RoundedCornerShape(6.dp)),
+                    placeholder = painterResource(R.drawable.placeholder),
+                    error = painterResource(R.drawable.placeholder)
+                )
+            } else {
+                Image(
+                    painter = painterResource(R.drawable.placeholder),
+                    contentDescription = "Default Image",
+                    contentScale = ContentScale.Crop,
+                    modifier = Modifier
+                        .size(90.dp)
+                        .clip(RoundedCornerShape(6.dp))
+                )
+            }
+
+            // Book Info - Right Side
+            Column(
+                modifier = Modifier
+                    .padding(start = 12.dp)
+                    .fillMaxWidth()
+            ) {
+                Text(text = transaction.book.title, style = MaterialTheme.typography.titleMedium)
+                Text(text = "₹${transaction.book.price}", style = MaterialTheme.typography.bodyMedium)
+                Text(
+                    text = transaction.book.category?.name ?: "",
+                    style = MaterialTheme.typography.bodySmall
+                )
+                Text(
+                    text = transaction.book.location?.city ?: "",
+                    style = MaterialTheme.typography.bodySmall
+                )
+            }
+        }
+    }
+}
+
+@Composable
+fun BookListRow(
+    list: List<Transaction>,
+    isSellerPage: Boolean = false,
+    navController: NavController?
+) {
+    LazyColumn {
+        items(list) { BookListRowItem(it, isSellerPage, navController) }
+    }
+
 }

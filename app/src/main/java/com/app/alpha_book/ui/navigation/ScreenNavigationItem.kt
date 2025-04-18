@@ -10,6 +10,7 @@ sealed class ScreenNavigationItem(val route: String) {
     object BookDetails : ScreenNavigationItem(Screen.BOOK_DETAILS.name)
     object CategoryDetails : ScreenNavigationItem(Screen.CATEGORY_DETAILS.name)
     object OrderPage : ScreenNavigationItem(Screen.ORDER_PAGE.name)
+    object TransactionScreen : ScreenNavigationItem(Screen.TRANSACTION.name)
 }
 
 

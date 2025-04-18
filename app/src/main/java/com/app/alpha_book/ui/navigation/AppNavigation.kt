@@ -13,6 +13,7 @@ import com.app.alpha_book.ui.screen.HomeScreen
 import com.app.alpha_book.ui.screen.OrderScreen
 import com.app.alpha_book.ui.screen.RegisterScreen
 import com.app.alpha_book.ui.screen.SplashScreen
+import com.app.alpha_book.ui.screen.TransactionScreen
 
 @Composable
 fun AppNavHost(
@@ -30,11 +31,27 @@ fun AppNavHost(
         composable(ScreenNavigationItem.Register.route) { RegisterScreen(navController) }
 
         composable(
-            route = ScreenNavigationItem.BookDetails.route + "/{${Argument.BOOK_ID.name}}",
-            arguments = listOf(navArgument(Argument.BOOK_ID.name) { type = NavType.IntType })
+            route = ScreenNavigationItem.BookDetails.route + "/{${Argument.BOOK_ID.name}}"+ "/{${Argument.IS_PROFILE.name}}",
+            arguments = listOf(
+                navArgument(Argument.BOOK_ID.name) { type = NavType.IntType },
+                navArgument(Argument.IS_PROFILE.name) { type = NavType.BoolType }
+            )
         ) {
             it.arguments?.getInt(Argument.BOOK_ID.name)
+            it.arguments?.getBoolean(Argument.IS_PROFILE.name)
             BookDetailsScreen(navController)
+        }
+
+        composable(
+            route = ScreenNavigationItem.TransactionScreen.route + "/{${Argument.TRANSACTION_ID.name}}"+"/{${Argument.IS_SELLER_PAGE.name}}",
+            arguments = listOf(
+                navArgument(Argument.TRANSACTION_ID.name) { type = NavType.IntType },
+                navArgument(Argument.IS_SELLER_PAGE.name) { type = NavType.BoolType },
+            )
+        ) {
+            it.arguments?.getInt(Argument.TRANSACTION_ID.name)
+            it.arguments?.getBoolean(Argument.IS_SELLER_PAGE.name)
+            TransactionScreen(navController)
         }
 
         composable(
