@@ -58,7 +58,7 @@ fun CategoryList(list: List<Category>, navController: NavController) {
             Card(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(16.dp)
+                    .padding(8.dp)
                     .clickable {
                         navController.navigate(
                             ScreenNavigationItem.CategoryDetails.route +
@@ -70,7 +70,7 @@ fun CategoryList(list: List<Category>, navController: NavController) {
                 Text(
                     text = it.name ?: "N/A",
                     modifier = Modifier.padding(16.dp),
-                    style = MaterialTheme.typography.titleLarge,
+                    style = MaterialTheme.typography.titleMedium,
                     textAlign = TextAlign.Center
                 )
             }

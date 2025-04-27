@@ -1,10 +1,6 @@
 package com.app.alpha_book.ui.screen
 
 //noinspection UsingMaterialAndMaterial3Libraries
-//noinspection UsingMaterialAndMaterial3Libraries
-//noinspection UsingMaterialAndMaterial3Libraries
-//noinspection UsingMaterialAndMaterial3Libraries
-//noinspection UsingMaterialAndMaterial3Libraries
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
@@ -17,6 +13,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
@@ -26,12 +23,14 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
+//noinspection UsingMaterialAndMaterial3Libraries
 import androidx.compose.material.LocalTextStyle
-import androidx.compose.material.Scaffold
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material.icons.filled.Phone
+//noinspection UsingMaterialAndMaterial3Libraries
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -116,7 +115,7 @@ fun TransactionScreen(navController: NavController) {
             transactionList?.firstOrNull()?.let { transaction ->
                 Column(
                     modifier = Modifier
-                        .padding(16.dp) // Consolidated padding
+                        .fillMaxSize()
                         .padding(paddingValues),
                     verticalArrangement = Arrangement.spacedBy(16.dp)
                 ) {

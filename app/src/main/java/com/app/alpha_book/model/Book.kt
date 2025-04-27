@@ -1,10 +1,7 @@
 package com.app.alpha_book.model
 
-import androidx.compose.runtime.snapshots.SnapshotStateList
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
-import java.io.File
-import java.nio.file.Files
 
 @Serializable
 data class Book(
@@ -22,12 +19,15 @@ data class Book(
 
     @SerialName("pdf_file") val pdfFile: String? = null,
     @SerialName("read_access") val readAccess: String? = null,
+    @SerialName("publication") val publication: String? = null,
     @SerialName("is_sold") val isSold: Boolean? = null,
 
     @SerialName("created_at") val createdAt: String? = null,
     @SerialName("updated_at") val updatedAt: String? = null,
     @SerialName("images") val images: List<BookImage>? = emptyList(),
-    @SerialName("seller") val sellerId: Int? = null
+    @SerialName("seller") val sellerId: Int? = null,
+
+    @SerialName("syllabus") val syllabus:Syllabus? =null
 )
 
 @Serializable
@@ -55,7 +55,15 @@ data class BookImage(
     @SerialName("image_url") val imageUrl: String? = null
 )
 
+@Serializable
+data class Syllabus(
+    @SerialName("course_name") val courseName :String? =null,
+    @SerialName("university_name") val universityName :String? =null,
+    val semester :Int? =null,
+    val subjects :List<String>? =null
+)
 
+@Serializable
 data class BookUploadModel(
     val title: String,
     val author: String,

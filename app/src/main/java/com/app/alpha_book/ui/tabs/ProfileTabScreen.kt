@@ -76,12 +76,12 @@ import com.app.alpha_book.remote.api.ApiImpl
 import com.app.alpha_book.remote.api.ApiInterface
 import com.app.alpha_book.remote.sharedPreferences.USER
 import com.app.alpha_book.remote.sharedPreferences.getIntData
+import com.app.alpha_book.ui.navigation.ScreenNavigationItem
 import com.app.alpha_book.ui.utils.ApiStatus
 import com.app.alpha_book.ui.utils.CenterLoadingView
 import com.app.alpha_book.ui.viewModel.UserViewModel
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
-import kotlinx.coroutines.delay
 import java.io.File
 import java.io.FileOutputStream
 
@@ -287,7 +287,9 @@ fun BooksPager(navController: NavController, id: Int) {
                                 modifier = Modifier.align(Alignment.Center)
                             )
 
-                            else -> BookList(list = bookList.orEmpty(), navController)
+                            else -> BookList(list = bookList.orEmpty()){ bookId->
+                                navController.navigate(ScreenNavigationItem.BookDetails.route + "/${bookId}/" + true)
+                            }
                         }
                     }
                 }
@@ -302,7 +304,7 @@ fun BooksPager(navController: NavController, id: Int) {
                                 text = "No books available",
                                 modifier = Modifier.align(Alignment.Center)
                             )
-                            else -> BookListRow(list = bookList.orEmpty(),false,navController)
+                            else -> BookListRow(list = bookList.orEmpty(),true,navController)
                         }
                     }
                 }
@@ -316,7 +318,7 @@ fun BooksPager(navController: NavController, id: Int) {
                                 text = "No books available",
                                 modifier = Modifier.align(Alignment.Center)
                             )
-                            else -> BookListRow(list = bookList.orEmpty(),true,navController)
+                            else -> BookListRow(list = bookList.orEmpty(),false,navController)
                         }
                     }
                 }

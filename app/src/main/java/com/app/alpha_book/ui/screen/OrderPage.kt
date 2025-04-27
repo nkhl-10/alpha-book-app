@@ -70,11 +70,12 @@ fun OrderScreen(navController: NavController) {
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val bookId = navBackStackEntry?.arguments?.getInt(Argument.BOOK_ID.name)
     var selectedAddress by remember { mutableStateOf<Address?>(null) }
-
-    LaunchedEffect(Unit) {
-        if (bookId != null) {
-            viewModel.getBookList(bookId)
-        }
+    if (bookId == null) {
+        Text(text = "Invalid Book ID", color = Color.Red)
+        return
+    }
+    LaunchedEffect(bookId) {
+        viewModel.getBookList(bookId)
         viewModel.getAddress(userId)
     }
 
@@ -129,16 +130,17 @@ fun OrderScreen(navController: NavController) {
                     }
                 } ?: Text(text = "No addresses available", fontSize = 16.sp)
 
-
-                book?.data.let { book ->
+                book?.let {
+                    val data = it.data
                     Card(
                         modifier = Modifier.fillMaxWidth(),
                         elevation = CardDefaults.cardElevation(4.dp)
                     ) {
                         Row {
-                            book?.images?.get(0).let { url ->
+                            val imageUrl = data?.images
+                            if (imageUrl!!.isNotEmpty()) {
                                 AsyncImage(
-                                    model = url?.imageUrl,
+                                    model = imageUrl[0].imageUrl,
                                     contentDescription = "Book Image",
                                     contentScale = ContentScale.Crop,
                                     modifier = Modifier.size(100.dp),
@@ -146,15 +148,16 @@ fun OrderScreen(navController: NavController) {
                                     error = painterResource(R.drawable.placeholder)
                                 )
                             }
+
                             Column(modifier = Modifier.padding(16.dp)) {
                                 Text(
-                                    text = "Book Title: ${book?.title}",
+                                    text = "Book Title: ${data.title}",
                                     fontSize = 18.sp,
                                     fontWeight = FontWeight.Bold
                                 )
-                                Text(text = "Author: ${book?.author}", fontSize = 16.sp)
+                                Text(text = "Author: ${data.author}", fontSize = 16.sp)
                                 Text(
-                                    text = "Price: ₹${book?.price}",
+                                    text = "Price: ₹${data.price}",
                                     fontSize = 16.sp,
                                     fontWeight = FontWeight.Bold
                                 )
@@ -165,10 +168,10 @@ fun OrderScreen(navController: NavController) {
 
                 Spacer(modifier = Modifier.height(16.dp))
 
-                Text(text = "Book Address", fontSize = 18.sp, fontWeight = FontWeight.Bold)
+                Text(text = "Seller Address", fontSize = 18.sp, fontWeight = FontWeight.Bold)
 
-
-                book?.data?.location.let { address ->
+                book?.let {
+                    val data = it.data?.location
                     Card(
                         modifier = Modifier.fillMaxWidth(),
                         elevation = CardDefaults.cardElevation(4.dp)
@@ -177,10 +180,10 @@ fun OrderScreen(navController: NavController) {
                             modifier = Modifier.padding(16.dp),
                             verticalArrangement = Arrangement.spacedBy(8.dp)
                         ) {
-                            Text(text = "Street: ${address?.street}", fontSize = 18.sp)
-                            Text(text = "City: ${address?.city}", fontSize = 16.sp)
-                            Text(text = "State: ${address?.state}", fontSize = 16.sp)
-                            Text(text = "Zip Code: ${address?.zipCode}", fontSize = 16.sp)
+                            Text(text = "Street: ${data?.street}", fontSize = 18.sp)
+                            Text(text = "City: ${data?.city}", fontSize = 16.sp)
+                            Text(text = "State: ${data?.state}", fontSize = 16.sp)
+                            Text(text = "Zip Code: ${data?.zipCode}", fontSize = 16.sp)
                         }
                     }
                 }

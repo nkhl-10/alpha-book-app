@@ -2,12 +2,10 @@ package com.app.alpha_book.ui.screen
 
 import android.annotation.SuppressLint
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -20,12 +18,12 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import com.app.alpha_book.remote.api.ApiImpl
 import com.app.alpha_book.remote.api.ApiInterface
 import com.app.alpha_book.ui.navigation.Argument
+import com.app.alpha_book.ui.navigation.ScreenNavigationItem
 import com.app.alpha_book.ui.tabs.BookList
 import com.app.alpha_book.ui.utils.CenterLoadingView
 import com.app.alpha_book.ui.viewModel.UserViewModel
@@ -70,7 +68,9 @@ fun CategoryByBooks(navController: NavController) {
                 when {
                     bookList == null -> CenterLoadingView()
                     bookList!!.isEmpty() -> Text(text = "No books available")
-                    else -> BookList(list = bookList.orEmpty(), navController)
+                    else -> BookList(list = bookList.orEmpty()){ bookId ->
+                        navController.navigate(ScreenNavigationItem.BookDetails.route + "/${bookId}/" + false)
+                    }
                 }
             }
         },

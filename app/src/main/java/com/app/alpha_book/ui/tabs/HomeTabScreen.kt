@@ -57,34 +57,34 @@ fun HomeTabScreen(mainNavController: NavController) {
         when {
             bookList == null -> CenterLoadingView()
             bookList!!.isEmpty() -> Text(text = "No books available")
-            else -> BookList(list = bookList.orEmpty(), mainNavController)
+            else -> BookList(list = bookList.orEmpty()){ bookId->
+                mainNavController.navigate(ScreenNavigationItem.BookDetails.route + "/${bookId}/" + false)
+            }
         }
     }
 }
 
 
 @Composable
-fun BookList(list: List<Book>, navController: NavController) {
+fun BookList(list: List<Book>, click: (Int) -> Unit) {
     LazyVerticalGrid(
         modifier = Modifier.fillMaxSize(),
         contentPadding = PaddingValues(10.dp),
-        columns = GridCells.Fixed(2)
+        columns = GridCells.Fixed(2),
     ) {
         items(list) {
-            BookItems(it, navController)
+            BookItems(it, click)
         }
     }
 }
 
 @Composable
-fun BookItems(books: Book, navController: NavController) {
+fun BookItems(books: Book, click: (Int) -> Unit) {
     Card(
         modifier = Modifier
             .fillMaxSize()
             .padding(4.dp)
-            .clickable {
-                navController.navigate(ScreenNavigationItem.BookDetails.route + "/${books.id}/" + false)
-            },
+            .clickable { click(books.id) },
         shape = RoundedCornerShape(6.dp),
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
     ) {
@@ -117,23 +117,27 @@ fun BookItems(books: Book, navController: NavController) {
             }
             Text(
                 text = books.title,
-                style = MaterialTheme.typography.titleLarge,
-                modifier = Modifier.padding(4.dp)
+                style = MaterialTheme.typography.titleMedium,
+                modifier = Modifier.padding(4.dp),
+                maxLines = 1
             )
             Text(
-                text = "Price: $${books.price.toString()}",
-                style = MaterialTheme.typography.bodyLarge,
-                modifier = Modifier.padding(4.dp)
+                text = "Price: ₹${books.price.toString()}",
+                style = MaterialTheme.typography.bodyMedium,
+                modifier = Modifier.padding(4.dp),
+                maxLines = 1
             )
             Text(
                 text = "Category Name: ${books.category?.name.toString()}",
-                style = MaterialTheme.typography.bodyMedium,
-                modifier = Modifier.padding(4.dp)
+                style = MaterialTheme.typography.bodySmall,
+                modifier = Modifier.padding(4.dp),
+                maxLines = 1
             )
             Text(
                 text = "Location: ${books.location?.city.toString()}",
-                style = MaterialTheme.typography.bodyMedium,
-                modifier = Modifier.padding(4.dp)
+                style = MaterialTheme.typography.bodySmall,
+                modifier = Modifier.padding(4.dp),
+                maxLines = 1
             )
         }
     }

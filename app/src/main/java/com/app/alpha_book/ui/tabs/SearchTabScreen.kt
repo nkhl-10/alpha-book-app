@@ -29,6 +29,7 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.app.alpha_book.remote.api.ApiImpl
 import com.app.alpha_book.remote.api.ApiInterface
+import com.app.alpha_book.ui.navigation.ScreenNavigationItem
 import com.app.alpha_book.ui.viewModel.UserViewModel
 
 @Composable
@@ -82,7 +83,9 @@ fun SearchTabScreen(navController: NavController) {
                 columns = GridCells.Fixed(2)
             ) {
                 items(books) {
-                    BookItems(it, navController)
+                    BookItems(it){ bookId ->
+                        navController.navigate(ScreenNavigationItem.BookDetails.route + "/${bookId}/" + false)
+                    }
                 }
 
             }
