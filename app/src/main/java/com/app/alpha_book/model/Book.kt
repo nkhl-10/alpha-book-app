@@ -7,6 +7,7 @@ import kotlinx.serialization.Serializable
 data class Book(
     @SerialName("id") val id: Int = 0,
     @SerialName("title") val title: String = "",
+
     @SerialName("author") val author: String? = null,
     @SerialName("description") val description: String? = null,
 
@@ -18,12 +19,14 @@ data class Book(
     @SerialName("book_type") val bookType: String? = null,
 
     @SerialName("pdf_file") val pdfFile: String? = null,
+    @SerialName("is_sold") val isSold: Boolean? = null,
+
     @SerialName("read_access") val readAccess: String? = null,
     @SerialName("publication") val publication: String? = null,
-    @SerialName("is_sold") val isSold: Boolean? = null,
 
     @SerialName("created_at") val createdAt: String? = null,
     @SerialName("updated_at") val updatedAt: String? = null,
+
     @SerialName("images") val images: List<BookImage>? = emptyList(),
     @SerialName("seller") val sellerId: Int? = null,
 

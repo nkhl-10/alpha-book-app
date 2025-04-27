@@ -209,13 +209,15 @@ class UserViewModel(private val api: ApiInterface) : ViewModel() {
     }
 
 
-    fun getBookList(bookId: Int) {
+    fun getBookList(bookId: Int?) {
         viewModelScope.launch {
             try {
                 Log.i(TAG, "Book List: $bookId")
-                val response = api.getBook(bookId)
-                Log.i(TAG, "Book List: $response")
-                _bookDetailsState.value = response
+                if (bookId != null){
+                    val response = api.getBook(bookId)
+                    Log.i(TAG, "Book List: $response")
+                    _bookDetailsState.value = response
+                }
             } catch (e: Exception) {
                 _bookListState.value = null
             }
