@@ -1,11 +1,22 @@
 package com.app.alpha_book.ui.utils
 
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.Info
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.unit.dp
 
 const val BASE_URL = "http://192.168.165.172:8000/api/"
 const val REGISTER_URL = "register"
@@ -25,6 +36,7 @@ const val ADDRESS_URL = "addresses/"
 const val ADDRESS_UPDATE_URL = "addressesUpdate"
 const val ADDRESS_DELETE_URL = "addressesDelete"
 const val SEARCH_CATEGORY_URL = "searchCategories"
+const val TRANSACTION_CONFIRM_URL = "transactionConfirm/"
 
 enum class ApiStatus(val code: Int, val message: String) {
     // ✅ Success Codes
@@ -57,5 +69,31 @@ fun CenterLoadingView() {
         modifier = Modifier.fillMaxSize()
     ) {
         CircularProgressIndicator()
+    }
+}
+
+@Composable
+fun NoBookAvailable() {
+    Box(
+        contentAlignment = Alignment.Center,
+        modifier = Modifier.fillMaxSize()
+    ) {
+        Column(
+            Modifier.align(Alignment.Center)
+        ) {
+            IconButton(
+                modifier = Modifier
+                    .align(Alignment.CenterHorizontally)
+                    .clip(RoundedCornerShape(6.dp))
+                    .size(36.dp)
+                    .padding(2.dp)
+                , onClick = { /*TODO*/ }) {
+                Icon(Icons.Rounded.Info, contentDescription = "info")
+            }
+            Text(
+                modifier = Modifier.align(Alignment.CenterHorizontally),
+                text = "No Books Data Available"
+            )
+        }
     }
 }

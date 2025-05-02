@@ -16,7 +16,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.Button
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -30,7 +29,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
@@ -43,6 +41,7 @@ import com.app.alpha_book.remote.api.ApiImpl
 import com.app.alpha_book.remote.api.ApiInterface
 import com.app.alpha_book.ui.navigation.ScreenNavigationItem
 import com.app.alpha_book.ui.utils.ApiStatus
+import com.app.alpha_book.ui.utils.CenterLoadingView
 import com.app.alpha_book.ui.viewModel.UserViewModel
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.delay
@@ -50,21 +49,17 @@ import kotlinx.coroutines.launch
 
 @Composable
 fun RegisterScreen(navController: NavHostController) {
-    val context = LocalContext.current
     val userApi: ApiInterface = ApiImpl()
     val viewModel = UserViewModel(userApi)
 
-
-// State variables for the inputs
-    var name by remember { mutableStateOf("") }
+    var userName by remember { mutableStateOf("") }
     var email by remember { mutableStateOf("") }
     var phoneNo by remember { mutableStateOf("") }
-    var paasword by remember { mutableStateOf("") }
+    var password by remember { mutableStateOf("") }
     var isLoading by remember { mutableStateOf(false) }
     var errorMessage by remember { mutableStateOf<String?>(null) }
     var passwordVisible by remember { mutableStateOf(false) }
 
-// UI Layout for Login Screen
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -78,11 +73,11 @@ fun RegisterScreen(navController: NavHostController) {
         ) {
 
             OutlinedTextField(
-                value = name,
-                onValueChange = { name = it },
-                label = { Text("Name") },
+                value = userName,
+                onValueChange = { userName = it },
+                label = { Text("User Name") },
                 modifier = Modifier.fillMaxWidth(),
-                isError = errorMessage != null && name.isEmpty(),
+                isError = errorMessage != null && userName.isEmpty(),
                 singleLine = true,
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text)
             )
@@ -117,11 +112,11 @@ fun RegisterScreen(navController: NavHostController) {
 
             // Password input field
             OutlinedTextField(
-                value = paasword,
-                onValueChange = { paasword = it },
+                value = password,
+                onValueChange = { password = it },
                 label = { Text("Password") },
                 modifier = Modifier.fillMaxWidth(),
-                isError = errorMessage != null && paasword.isEmpty(),
+                isError = errorMessage != null && password.isEmpty(),
                 singleLine = true,
                 visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
                 trailingIcon = {
@@ -163,7 +158,7 @@ fun RegisterScreen(navController: NavHostController) {
             Button(
                 onClick = {
                     errorMessage = null
-                    if (name.isEmpty() || paasword.isEmpty() || phoneNo.isEmpty() || email.isEmpty()) {
+                    if (userName.isEmpty() || password.isEmpty() || phoneNo.isEmpty() || email.isEmpty()) {
                         errorMessage = "Please enter details"
                     } else {
                         isLoading = true
@@ -173,10 +168,11 @@ fun RegisterScreen(navController: NavHostController) {
                             isLoading = false
                             val user = User(
                                 email = email,
-                                password = paasword,
-                                username = name,
+                                password = password,
+                                username = userName,
                                 phone = phoneNo,
-                                avatar = "null"
+                                name = "",
+                                avatar = ""
                             )
                             val response = viewModel.createUser(user)
                             Log.i("TAG", "RegisterScreenAuth: $response")
@@ -193,14 +189,10 @@ fun RegisterScreen(navController: NavHostController) {
                 },
                 modifier = Modifier.fillMaxWidth()
             ) {
-                Text(text = "Login", style = TextStyle(fontSize = 18.sp))
+                Text(text = "Register", style = TextStyle(fontSize = 18.sp))
             }
 
-            // Loading Indicator
-            if (isLoading) {
-                Spacer(modifier = Modifier.height(16.dp))
-                CircularProgressIndicator()
-            }
+            if (isLoading) CenterLoadingView()
         }
     }
 }

@@ -12,6 +12,7 @@ import com.app.alpha_book.model.Category
 import com.app.alpha_book.model.LoginRequest
 import com.app.alpha_book.model.TokenResponse
 import com.app.alpha_book.model.Transaction
+import com.app.alpha_book.model.TransactionConfirm
 import com.app.alpha_book.model.User
 import com.app.alpha_book.remote.api.ApiInterface
 import com.app.alpha_book.ui.utils.ApiStatus
@@ -208,12 +209,21 @@ class UserViewModel(private val api: ApiInterface) : ViewModel() {
         }
     }
 
+    suspend fun transaction(data: TransactionConfirm): String {
+        return try {
+            val response = api.transactionConfirm(data)
+            response.message ?: "No message"
+        } catch (e: Exception) {
+            "Something went wrong"
+        }
+    }
+
 
     fun getBookList(bookId: Int?) {
         viewModelScope.launch {
             try {
                 Log.i(TAG, "Book List: $bookId")
-                if (bookId != null){
+                if (bookId != null) {
                     val response = api.getBook(bookId)
                     Log.i(TAG, "Book List: $response")
                     _bookDetailsState.value = response
@@ -228,6 +238,19 @@ class UserViewModel(private val api: ApiInterface) : ViewModel() {
         viewModelScope.launch {
             try {
                 val response = api.getUser(userId)
+                Log.i(TAG, "getUser: $response")
+                _userState.value = response
+            } catch (e: Exception) {
+                _userState.value = null
+            }
+        }
+    }
+
+    fun updateUser(userId: Int, updatedUser: User) {
+        viewModelScope.launch {
+            try {
+                val response = api.updateUser(userId, updatedUser)
+                Log.i(TAG, "updateUser: $response")
                 _userState.value = response
             } catch (e: Exception) {
                 _userState.value = null

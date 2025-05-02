@@ -26,6 +26,7 @@ import com.app.alpha_book.ui.navigation.Argument
 import com.app.alpha_book.ui.navigation.ScreenNavigationItem
 import com.app.alpha_book.ui.tabs.BookList
 import com.app.alpha_book.ui.utils.CenterLoadingView
+import com.app.alpha_book.ui.utils.NoBookAvailable
 import com.app.alpha_book.ui.viewModel.UserViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -67,7 +68,7 @@ fun CategoryByBooks(navController: NavController) {
                 .padding(paddingValues)) {
                 when {
                     bookList == null -> CenterLoadingView()
-                    bookList!!.isEmpty() -> Text(text = "No books available")
+                    bookList!!.isEmpty() -> NoBookAvailable()
                     else -> BookList(list = bookList.orEmpty()){ bookId ->
                         navController.navigate(ScreenNavigationItem.BookDetails.route + "/${bookId}/" + false)
                     }

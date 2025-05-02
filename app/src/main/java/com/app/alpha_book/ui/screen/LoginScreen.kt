@@ -118,7 +118,7 @@ fun LoginScreen(navController: NavController) {
                 Text(text = "Create Account", modifier = Modifier.clickable {
                     navController.navigate(ScreenNavigationItem.Register.route)
                 })
-                Text(text = "Forget Password")
+               // Text(text = "Forget Password")
             }
             Spacer(modifier = Modifier.height(16.dp))
 

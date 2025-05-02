@@ -6,5 +6,6 @@ import kotlinx.serialization.Serializable
 data class ApiResponse<T>(
     val status: Int? = null,
     val data: T? = null,
-    val message: String? = null
+    val message: String? = null,
+    val detail: String? = null
 )

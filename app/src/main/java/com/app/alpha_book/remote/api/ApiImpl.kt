@@ -10,6 +10,7 @@ import com.app.alpha_book.model.Category
 import com.app.alpha_book.model.LoginRequest
 import com.app.alpha_book.model.TokenResponse
 import com.app.alpha_book.model.Transaction
+import com.app.alpha_book.model.TransactionConfirm
 import com.app.alpha_book.model.User
 import com.app.alpha_book.ui.utils.ADDRESS_DELETE_URL
 import com.app.alpha_book.ui.utils.ADDRESS_UPDATE_URL
@@ -175,6 +176,12 @@ class ApiImpl : BaseApiService(), ApiInterface {
         }
     }
 
+    override suspend fun updateUser(userId: Int,userData:User): ApiResponse<User> {
+        return safeApiCall {
+            putRequest("$USER_URL/$userId/",userData)
+        }
+    }
+
     override suspend fun deleteAddress(addressId: Int): ApiResponse<String> {
         return safeApiCall {
             deleteRequest("$ADDRESS_DELETE_URL/$addressId/")
@@ -190,6 +197,12 @@ class ApiImpl : BaseApiService(), ApiInterface {
     override suspend fun searchCategories(query: String): ApiResponse<List<Category>> {
         return safeApiCall {
             getRequest("$SEARCH_CATEGORY_URL/?query=$query")
+        }
+    }
+
+    override suspend fun transactionConfirm(transactionConfirm: TransactionConfirm): ApiResponse<String> {
+        return safeApiCall {
+            postRequest(TRANSACTION_URL,transactionConfirm)
         }
     }
 

@@ -4,12 +4,12 @@ import android.content.ContentUris
 import android.content.Context
 import android.net.Uri
 import android.provider.MediaStore
-import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.result.launch
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -19,6 +19,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -94,7 +95,7 @@ fun AddBookTabScreen(navController: NavController) {
     var bookType by remember { mutableStateOf(bookTypes[0]) }
     var condition by remember { mutableStateOf(conditions[3]) }
     var readAccess by remember { mutableStateOf(readAccessOptions[0]) }
-    var selectedImageUris = remember { mutableStateListOf<Uri>() }
+    val selectedImageUris = remember { mutableStateListOf<Uri>() }
     var selectedPdfUri by remember { mutableStateOf<Uri?>(null) }
     var selectedAddress by remember { mutableStateOf<Address?>(null) }
     var selectedCategory by remember { mutableStateOf<Category?>(null) }
@@ -193,11 +194,11 @@ fun AddBookTabScreen(navController: NavController) {
                         modifier = Modifier.fillMaxSize(), verticalArrangement = Arrangement.Top
                     ) {
                         Text(
-                        text = "Set Book Attributes",
-                        fontSize = 24.sp,
-                        fontWeight = FontWeight.Bold,
-                        modifier = Modifier.padding(bottom = 16.dp, top = 16.dp)
-                    )
+                            text = "Set Book Attributes",
+                            fontSize = 24.sp,
+                            fontWeight = FontWeight.Bold,
+                            modifier = Modifier.padding(bottom = 16.dp, top = 16.dp)
+                        )
                         DropdownMenuField(label = "Book Type",
                             options = bookTypes,
                             selectedOption = bookType,
@@ -233,7 +234,7 @@ fun AddBookTabScreen(navController: NavController) {
                         } else {
                             PdfPicker(selectedPdfUri) { uri ->
                                 selectedPdfUri = uri
-                                imageError = uri == null
+                                imageError = false
                             }
                         }
                         if (imageError) Text("Image or PDF is required", color = Color.Red)
@@ -273,27 +274,39 @@ fun AddBookTabScreen(navController: NavController) {
                             fontWeight = FontWeight.Bold,
                             modifier = Modifier.padding(bottom = 8.dp, top = 8.dp)
                         )
-
-                        addressList?.forEach { address ->
-                            Card(modifier = Modifier
-                                .fillMaxWidth()
-                                .clickable { selectedAddress = address }
-                                .padding(4.dp),
-                                elevation = CardDefaults.cardElevation(4.dp)) {
-                                Row(
-                                    modifier = Modifier.padding(16.dp),
-                                    verticalAlignment = Alignment.CenterVertically
-                                ) {
-                                    RadioButton(selected = selectedAddress == address,
-                                        onClick = { selectedAddress = address })
-                                    Spacer(modifier = Modifier.width(8.dp))
-                                    Text(
-                                        text = "${address.street}, ${address.city}, ${address.state}, ${address.zip_code}",
-                                        fontSize = 16.sp
-                                    )
+                        if (addressList.isNullOrEmpty()) {
+                            Text(text = "No addresses available", fontSize = 16.sp)
+                        } else {
+                            LazyColumn(
+                                modifier = Modifier.fillMaxWidth().heightIn(max = 300.dp)
+                            ) {
+                                items(addressList!!) { address ->
+                                    Card(
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .clickable { selectedAddress = address }
+                                            .padding(4.dp),
+                                        elevation = CardDefaults.cardElevation(4.dp)
+                                    ) {
+                                        Row(
+                                            modifier = Modifier.padding(16.dp),
+                                            verticalAlignment = Alignment.CenterVertically
+                                        ) {
+                                            RadioButton(
+                                                selected = selectedAddress == address,
+                                                onClick = { selectedAddress = address }
+                                            )
+                                            Spacer(modifier = Modifier.width(8.dp))
+                                            Text(
+                                                text = "${address.street}, ${address.city}, ${address.state}, ${address.zip_code}",
+                                                fontSize = 16.sp
+                                            )
+                                        }
+                                    }
                                 }
                             }
-                        } ?: Text(text = "No addresses available", fontSize = 16.sp)
+                        }
+
                         if (addressError) Text("Address selection is required", color = Color.Red)
                     }
                 }
@@ -309,7 +322,7 @@ fun AddBookTabScreen(navController: NavController) {
         ) {
             if (pagerState.currentPage != 0) {
                 if (pagerState.currentPage != pagerState.pageCount - 1) {
-                    Button(modifier = Modifier.weight(1f), onClick = {
+                    Button(modifier = Modifier.weight(1f).padding(8.dp), onClick = {
                         scope.launch { pagerState.animateScrollToPage(pagerState.currentPage - 1) }
                     }) {
                         Text("Previous")
@@ -317,7 +330,7 @@ fun AddBookTabScreen(navController: NavController) {
                 }
             }
 
-            Button(modifier = Modifier.weight(1f), onClick = {
+            Button(modifier = Modifier.weight(1f).padding(8.dp), onClick = {
                 when (pagerState.currentPage) {
                     0 -> {
                         titleError = title.isBlank()
@@ -362,10 +375,9 @@ fun AddBookTabScreen(navController: NavController) {
                             images = getBytesFromUris(context, selectedImageUris),
                             sellerId = context.getIntData(USER.ID.name, 0)
                         )
-                        Log.i("TAG", "AddBookTabScreen: $book")
                         isLoading = true
                         viewModel.uploadBook(book)
-                        isLoading=false
+                        isLoading = false
                         navController.navigate(HomeTabItem.Profile.route)
                     })
                 } else Text("Next")
@@ -493,68 +505,39 @@ fun ImagePicker(selectedImages: SnapshotStateList<Uri>, onImageSelected: (Uri) -
         }
 
         Spacer(modifier = Modifier.height(8.dp))
-
-        /*     // Third Row: Show Images from DCIM Folder
-             LazyRow(
-                 modifier = Modifier
-                     .fillMaxWidth()
-                     .padding(8.dp)
-             ) {
-                 items(getDcimImages(context)) { uri ->
-                     Image(
-                         painter = rememberImagePainter(uri),
-                         contentDescription = "DCIM Image",
-                         modifier = Modifier
-                             .size(80.dp)
-                             .clip(RoundedCornerShape(8.dp))
-                             .padding(4.dp)
-                             .clickable { onImageSelected(uri) }
-                     )
-                 }
-             }*/
     }
-}
-
-
-fun getDcimImages(context: Context): List<Uri> {
-    val images = mutableListOf<Uri>()
-    val projection = arrayOf(MediaStore.Images.Media._ID)
-    val selection = "${MediaStore.Images.Media.RELATIVE_PATH} LIKE ?"
-    val selectionArgs = arrayOf("DCIM/%")
-    val sortOrder = "${MediaStore.Images.Media.DATE_ADDED} DESC"
-
-    val queryUri = MediaStore.Images.Media.EXTERNAL_CONTENT_URI
-    context.contentResolver.query(queryUri, projection, selection, selectionArgs, sortOrder)
-        ?.use { cursor ->
-            val columnIndex = cursor.getColumnIndexOrThrow(MediaStore.Images.Media._ID)
-            while (cursor.moveToNext()) {
-                val imageId = cursor.getLong(columnIndex)
-                val imageUri = ContentUris.withAppendedId(queryUri, imageId)
-                images.add(imageUri)
-            }
-        }
-    return images
 }
 
 @Composable
 fun DropdownMenuField(
-    label: String, options: List<String>, selectedOption: String, onOptionSelected: (String) -> Unit
+    label: String,
+    options: List<String>,
+    selectedOption: String,
+    onOptionSelected: (String) -> Unit
 ) {
     var expanded by remember { mutableStateOf(false) }
 
-    Box(modifier = Modifier.fillMaxWidth()) {
-        OutlinedTextField(
-            value = selectedOption,
-            onValueChange = {},
-            label = { Text(label) },
-            readOnly = true,
-            trailingIcon = {
-                Icon(Icons.Default.ArrowDropDown,
-                    contentDescription = "Dropdown",
-                    Modifier.clickable { expanded = true })
-            },
-            modifier = Modifier.fillMaxWidth()
-        )
+    Column(modifier = Modifier.fillMaxWidth()) {
+        Spacer(modifier = Modifier.height(10.dp))
+
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .border(1.dp, Color.Gray, RoundedCornerShape(4.dp))
+                .clickable { expanded = true }
+                .padding(16.dp)
+        ) {
+            Text(
+                text = selectedOption.ifEmpty { "Select $label" },
+                color = if (selectedOption.isNotEmpty()) Color.Black else Color.Gray
+            )
+
+            Icon(
+                imageVector = Icons.Default.ArrowDropDown,
+                contentDescription = "Dropdown",
+                modifier = Modifier.align(Alignment.CenterEnd)
+            )
+        }
 
         DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
             options.forEach { option ->
@@ -568,6 +551,7 @@ fun DropdownMenuField(
 }
 
 
+
 @Composable
 fun SearchableCategoryField(viewModel: UserViewModel, onCategorySelected: (Category) -> Unit) {
     var query by remember { mutableStateOf("") }
@@ -579,20 +563,22 @@ fun SearchableCategoryField(viewModel: UserViewModel, onCategorySelected: (Categ
     }
 
     Column {
-        OutlinedTextField(
-            value = query,
-            onValueChange = { query = it },
-            label = { Text("Search Category") },
-            trailingIcon = {
-                Icon(Icons.Default.ArrowDropDown,
-                    contentDescription = "Dropdown",
-                    Modifier.clickable { showDialog = true })
-            },
+        Spacer(modifier = Modifier.height(10.dp))
+        Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .clickable { showDialog = true },
-            readOnly = true
-        )
+                .clickable { showDialog = true }  // Show dropdown dialog
+                .border(1.dp, Color.Gray, RoundedCornerShape(4.dp))
+                .padding(16.dp)
+        ) {
+            Text(text = query.ifEmpty { "Search Category" })
+            Icon(
+                imageVector = Icons.Default.ArrowDropDown,
+                contentDescription = "Dropdown",
+                modifier = Modifier.align(Alignment.CenterEnd)
+            )
+        }
+
 
         if (showDialog) {
             Dialog(onDismissRequest = { showDialog = false }) {

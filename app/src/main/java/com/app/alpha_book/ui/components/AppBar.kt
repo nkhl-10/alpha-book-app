@@ -1,38 +1,113 @@
 package com.app.alpha_book.ui.components
 
+import android.Manifest
+import android.content.Context
+import android.content.Intent
+import android.content.pm.PackageManager
+import android.location.Location
+import android.util.Log
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.Logout
+import androidx.compose.material.icons.filled.MyLocation
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.core.content.ContextCompat
+import com.app.alpha_book.base.MainActivity
+import com.app.alpha_book.base.MainActivity.Companion.latitude
+import com.app.alpha_book.base.MainActivity.Companion.longitude
+import com.app.alpha_book.remote.sharedPreferences.clearAllData
+import com.google.android.gms.location.FusedLocationProviderClient
+import com.google.android.gms.location.LocationServices
 
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AppBar(title: String, onNavigationIconClick: () -> Unit = {}) {
+fun AppBar(title: String) {
+    val context = LocalContext.current
+
+    val fusedLocationClient = remember { LocationServices.getFusedLocationProviderClient(context) }
+    val locationPermissionLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestPermission()
+    ) { isGranted ->
+        if (isGranted) getCurrentLocation(context, fusedLocationClient) { location ->
+            Log.d("Location", "User Location: $location")
+        }
+        else Log.e("Permission", "Permission denied")
+    }
+
     TopAppBar(
         title = {
             Text(
                 text = title,
-                Modifier.fillMaxWidth().padding(8.dp),
+                Modifier
+                    .fillMaxWidth()
+                    .padding(8.dp),
                 style = MaterialTheme.typography.headlineLarge,
                 textAlign = TextAlign.Start
             )
         },
-        /* navigationIcon = {
-             IconButton(onClick = onNavigationIconClick) {
-                 Icon(Icons.Filled.Menu, contentDescription = "Menu")
-             }
-         },
-         actions = {
-             IconButton(onClick = onNavigationIconClick ) {
-                 Icon(Icons.Filled.Notifications, contentDescription = "Notifications")
-             }
-         }*/
+        actions = {
+            if (title == "Profile") {
+                IconButton(onClick = {
+                    context.clearAllData()
+                    context.startActivity(Intent(context, MainActivity::class.java))
+                }) {
+                    Icon(Icons.AutoMirrored.Filled.Logout, contentDescription = "More")
+                }
+            }else if (title == "Home"){
+                IconButton(onClick = {
+                    if (ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED)
+                        getCurrentLocation(context, fusedLocationClient) { location ->
+                        if (location != null) {
+                            latitude = location.latitude
+                            longitude = location.longitude
+                        }
+                    }
+                    else {
+                        locationPermissionLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION)
+                    }
+                }) {
+                    Icon(Icons.Default.MyLocation, contentDescription = "Get Location")
+                }
+            }
+        }
     )
+}
+
+
+fun getCurrentLocation(
+    context: Context,
+    fusedLocationClient: FusedLocationProviderClient,
+    onLocationReceived: (Location?) -> Unit
+) {
+    if (ContextCompat.checkSelfPermission(
+            context,
+            Manifest.permission.ACCESS_FINE_LOCATION
+        ) == PackageManager.PERMISSION_GRANTED
+    ) {
+        fusedLocationClient.lastLocation.addOnSuccessListener { location ->
+            Log.e("Location", "get location: $location")
+            onLocationReceived(location)
+        }.addOnFailureListener {
+            Log.e("Location", "Failed to get location: ${it.message}")
+            onLocationReceived(null)
+        }
+    } else {
+        Log.e("Location", "Location permission not granted")
+        onLocationReceived(null)
+    }
 }

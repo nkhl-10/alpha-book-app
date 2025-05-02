@@ -62,7 +62,6 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat
@@ -79,6 +78,7 @@ import com.app.alpha_book.remote.sharedPreferences.getIntData
 import com.app.alpha_book.ui.navigation.ScreenNavigationItem
 import com.app.alpha_book.ui.utils.ApiStatus
 import com.app.alpha_book.ui.utils.CenterLoadingView
+import com.app.alpha_book.ui.utils.NoBookAvailable
 import com.app.alpha_book.ui.viewModel.UserViewModel
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
@@ -86,7 +86,7 @@ import java.io.File
 import java.io.FileOutputStream
 
 @Composable
-fun ProfileTabScreen(mainNavController: NavController, navController: NavController) {
+fun ProfileTabScreen(mainNavController: NavController) {
     val context = LocalContext.current
     val userApi: ApiInterface = ApiImpl()
     val viewModel = remember { UserViewModel(userApi) }
@@ -107,7 +107,6 @@ fun ProfileTabScreen(mainNavController: NavController, navController: NavControl
                 UserProfileCard(it, viewModel)
                 BooksPager(mainNavController, it.id)
             } ?: CenterLoadingView()
-
         } else CenterLoadingView()
 
     }
@@ -122,6 +121,7 @@ fun UserProfileCard(user: User, viewModel: UserViewModel) {
     val showDialog = remember { mutableStateOf(false) }
     val showDialogForAddAddress = remember { mutableStateOf(false) }
     val showDialogForManageAddAddress = remember { mutableStateOf(false) }
+    val showDialogEditProfile = remember { mutableStateOf(false) }
     val pickImageLauncher =
         rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { uri ->
             uri?.let {
@@ -144,7 +144,7 @@ fun UserProfileCard(user: User, viewModel: UserViewModel) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(16.dp),
+            .padding(8.dp),
         elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
     ) {
         Row(
@@ -177,7 +177,6 @@ fun UserProfileCard(user: User, viewModel: UserViewModel) {
                 }
             }
 
-
             // Dialog to pick an option
             if (showDialog.value) {
                 AlertDialog(
@@ -209,50 +208,116 @@ fun UserProfileCard(user: User, viewModel: UserViewModel) {
                     .align(alignment = Alignment.Top)
                     .fillMaxWidth()
             ) {
-                Text(
-                    text = user.username,
-                    style = MaterialTheme.typography.titleLarge,
-                    textAlign = TextAlign.Center
-                )
+                Text(text = user.name, style = MaterialTheme.typography.titleLarge)
                 Spacer(modifier = Modifier.height(6.dp))
-                Text(
-                    text = user.email,
-                    style = MaterialTheme.typography.titleMedium,
-                    textAlign = TextAlign.Center
-                )
+
+                Text(text = user.username)
                 Spacer(modifier = Modifier.height(6.dp))
-                Text(
-                    text = user.phone ?: "Not Available Phone No",
-                    style = MaterialTheme.typography.titleMedium,
-                    textAlign = TextAlign.Center
-                )
+
+                Text(text = user.email)
+                Spacer(modifier = Modifier.height(6.dp))
+
+                Text(text = user.phone ?: "Not Available Phone No")
             }
         }
 
         Row(
             modifier = Modifier
-                .padding(8.dp)
+                .padding(4.dp)
                 .fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically
         ) {
             OutlinedButton(
                 onClick = { showDialogForAddAddress.value = true },
-                content = { Text("Add Address") },
-                modifier = Modifier.weight(1f)
+                content = { Text("Add Address", style = MaterialTheme.typography.bodySmall) },
             )
 
             AddAddressDialog(showDialogForAddAddress, viewModel)
-            Spacer(modifier = Modifier.width(18.dp))
+            Spacer(modifier = Modifier.width(5.dp))
 
             OutlinedButton(
                 onClick = { showDialogForManageAddAddress.value = true },
-                content = { Text("Manage Address") },
-                modifier = Modifier.weight(1f)
+                content = { Text("Manage Address", style = MaterialTheme.typography.bodySmall) },
             )
 
             ManageAddressDialog(showDialogForManageAddAddress, viewModel)
+            Spacer(modifier = Modifier.width(5.dp))
 
+            OutlinedButton(
+                onClick = { showDialogEditProfile.value = true },
+                content = { Text("Edit Profile", style = MaterialTheme.typography.bodySmall) },
+            )
+
+            EditProfileDialog(showDialogEditProfile, viewModel)
         }
+    }
+}
+
+@Composable
+fun EditProfileDialog(showDialogEditProfile: MutableState<Boolean>, viewModel: UserViewModel) {
+
+    val context = LocalContext.current
+    val user by viewModel.userState.collectAsState()
+
+    val name = remember { mutableStateOf(user?.data?.name ?: "") }
+    val email = remember { mutableStateOf(user?.data?.email ?: "") }
+    val phone = remember { mutableStateOf(user?.data?.phone ?: "") }
+
+
+    LaunchedEffect(Unit) {
+        val id = context.getIntData(USER.ID.name, 0)
+        viewModel.getUser(id)
+        user!!.let {
+            name.value = it.data?.name ?: ""
+            email.value = it.data?.email ?: ""
+            phone.value = it.data?.phone ?: ""
+        }
+    }
+
+    if (showDialogEditProfile.value) {
+        AlertDialog(
+            onDismissRequest = { showDialogEditProfile.value = false },
+            title = { Text("Edit Profile") },
+            text = {
+                Column {
+                    OutlinedTextField(
+                        value = name.value,
+                        onValueChange = { name.value = it },
+                        label = { Text("Name") }
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    OutlinedTextField(
+                        value = email.value,
+                        onValueChange = { email.value = it },
+                        label = { Text("Email") }
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    OutlinedTextField(
+                        value = phone.value,
+                        onValueChange = { phone.value = it },
+                        label = { Text("Phone") }
+                    )
+                }
+            },
+            confirmButton = {
+                Button(onClick = {
+                    val updatedUser = user?.data?.copy(
+                        name = name.value,
+                        email = email.value,
+                        phone = phone.value
+                    )
+                    Log.i("TAG", "EditProfileDialog: $updatedUser")
+                    if (updatedUser != null) {
+                        viewModel.updateUser(user!!.data!!.id, updatedUser)
+                    }
+                    showDialogEditProfile.value = false
+                }) {
+                    Text("Update")
+                }
+            }
+        )
+
+
     }
 }
 
@@ -278,16 +343,15 @@ fun BooksPager(navController: NavController, id: Int) {
                 0 -> {
                     val bookList by viewModel.bookList.collectAsState()
                     LaunchedEffect(Unit) { viewModel.getUserByBookList(id) }
-                    Box(modifier = Modifier.fillMaxWidth().fillMaxHeight()) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .fillMaxHeight()
+                    ) {
                         when {
                             bookList == null -> CenterLoadingView()
-
-                            bookList!!.isEmpty() -> Text(
-                                text = "No books available",
-                                modifier = Modifier.align(Alignment.Center)
-                            )
-
-                            else -> BookList(list = bookList.orEmpty()){ bookId->
+                            bookList!!.isEmpty() -> NoBookAvailable()
+                            else -> BookList(list = bookList.orEmpty()) { bookId ->
                                 navController.navigate(ScreenNavigationItem.BookDetails.route + "/${bookId}/" + true)
                             }
                         }
@@ -297,28 +361,31 @@ fun BooksPager(navController: NavController, id: Int) {
                 1 -> {
                     val bookList by viewModel.transactionList.collectAsState()
                     LaunchedEffect(Unit) { viewModel.getOrderedByBookList(id) }
-                    Box(modifier = Modifier.fillMaxWidth().fillMaxHeight()) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .fillMaxHeight()
+                    ) {
                         when {
                             bookList == null -> CenterLoadingView()
-                            bookList!!.isEmpty() -> Text(
-                                text = "No books available",
-                                modifier = Modifier.align(Alignment.Center)
-                            )
-                            else -> BookListRow(list = bookList.orEmpty(),true,navController)
+                            bookList!!.isEmpty() -> NoBookAvailable()
+                            else -> BookListRow(list = bookList.orEmpty(), true, navController)
                         }
                     }
                 }
+
                 2 -> {
                     val bookList by viewModel.transactionList.collectAsState()
                     LaunchedEffect(Unit) { viewModel.soldByUserBookList(id) }
-                    Box(modifier = Modifier.fillMaxWidth().fillMaxHeight()) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .fillMaxHeight()
+                    ) {
                         when {
                             bookList == null -> CenterLoadingView()
-                            bookList!!.isEmpty() -> Text(
-                                text = "No books available",
-                                modifier = Modifier.align(Alignment.Center)
-                            )
-                            else -> BookListRow(list = bookList.orEmpty(),false,navController)
+                            bookList!!.isEmpty() -> NoBookAvailable()
+                            else -> BookListRow(list = bookList.orEmpty(), false, navController)
                         }
                     }
                 }
@@ -533,6 +600,15 @@ fun AddAddressDialog(showDialog: MutableState<Boolean>, viewModel: UserViewModel
     var isLoading by remember { mutableStateOf(false) }
     val fusedLocationClient = remember { LocationServices.getFusedLocationProviderClient(context) }
 
+    val locationPermissionLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestPermission()
+    ) { isGranted ->
+        if (isGranted) getCurrentLocation(context, fusedLocationClient) { location ->
+            Log.d("Location", "User Location: $location")
+        }
+        else Log.e("Permission", "Permission denied")
+    }
+
     if (showDialog.value) {
         AlertDialog(
             onDismissRequest = { showDialog.value = false },
@@ -570,12 +646,20 @@ fun AddAddressDialog(showDialog: MutableState<Boolean>, viewModel: UserViewModel
                     Button(
                         onClick = {
                             isLoading = true
-                            getCurrentLocation(context, fusedLocationClient) { location ->
+                            if (ContextCompat.checkSelfPermission(
+                                    context,
+                                    Manifest.permission.ACCESS_FINE_LOCATION
+                                ) == PackageManager.PERMISSION_GRANTED
+                            ) getCurrentLocation(context, fusedLocationClient) { location ->
                                 if (location != null) {
                                     latitude = location.latitude
                                     longitude = location.longitude
                                 }
                                 isLoading = false
+                            }
+                            else {
+                                locationPermissionLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION)
+                                showDialog.value = false
                             }
                         },
                         modifier = Modifier.fillMaxWidth(),
@@ -632,7 +716,6 @@ fun getCurrentLocation(
     fusedLocationClient: FusedLocationProviderClient,
     onLocationReceived: (Location?) -> Unit
 ) {
-
     if (ContextCompat.checkSelfPermission(
             context,
             Manifest.permission.ACCESS_FINE_LOCATION

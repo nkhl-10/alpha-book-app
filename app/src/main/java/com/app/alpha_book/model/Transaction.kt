@@ -13,3 +13,9 @@ data class Transaction(
     @SerialName("transaction_date") val transactionDate: String,
     val otp :Int
 )
+
+@Serializable
+data class TransactionConfirm(
+    @SerialName("transaction_id") val transactionId: Int?= null,
+    @SerialName("otp") val otp: Int?= null
+)

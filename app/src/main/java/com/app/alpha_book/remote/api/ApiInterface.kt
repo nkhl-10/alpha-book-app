@@ -9,6 +9,7 @@ import com.app.alpha_book.model.Category
 import com.app.alpha_book.model.LoginRequest
 import com.app.alpha_book.model.TokenResponse
 import com.app.alpha_book.model.Transaction
+import com.app.alpha_book.model.TransactionConfirm
 import com.app.alpha_book.model.User
 import java.io.File
 
@@ -26,6 +27,8 @@ interface ApiInterface {
     suspend fun getBook(bookId: Int): ApiResponse<Book>
 
     suspend fun getUser(userId: Int): ApiResponse<User>
+
+    suspend fun updateUser(userId: Int,userData:User): ApiResponse<User>
 
     suspend fun searchBooks(query: String): ApiResponse<List<Book>>
 
@@ -56,4 +59,6 @@ interface ApiInterface {
     suspend fun getAddress(userId: Int): ApiResponse<List<Address>>
 
     suspend fun searchCategories(query: String): ApiResponse<List<Category>>
+
+    suspend fun transactionConfirm(transactionConfirm: TransactionConfirm):ApiResponse<String>
 }

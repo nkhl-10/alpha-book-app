@@ -65,6 +65,7 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import com.app.alpha_book.model.Transaction
+import com.app.alpha_book.model.TransactionConfirm
 import com.app.alpha_book.remote.api.ApiImpl
 import com.app.alpha_book.remote.api.ApiInterface
 import com.app.alpha_book.ui.navigation.Argument
@@ -72,6 +73,7 @@ import com.app.alpha_book.ui.tabs.BookListRow
 import com.app.alpha_book.ui.utils.CenterLoadingView
 import com.app.alpha_book.ui.viewModel.UserViewModel
 import com.google.android.gms.maps.model.LatLng
+import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.launch
 import kotlin.math.roundToInt
 
@@ -113,6 +115,9 @@ fun TransactionScreen(navController: NavController) {
         },
         content = { paddingValues ->
             transactionList?.firstOrNull()?.let { transaction ->
+                var otp by remember { mutableStateOf("") }
+                var isLoading by remember { mutableStateOf(false) }
+
                 Column(
                     modifier = Modifier
                         .fillMaxSize()
@@ -129,10 +134,23 @@ fun TransactionScreen(navController: NavController) {
                     }
                     // Buyer View
                     else {
-                        BuyerOTPInput()
+
+                        BuyerOTPInput { enteredOtp -> otp = enteredOtp }
+
                         SwipeToConfirmButton {
-                            Toast.makeText(context, "Order Completed", Toast.LENGTH_SHORT).show()
+                            if (otp.length != 6) {
+                                Toast.makeText(context, "Invalid OTP", Toast.LENGTH_SHORT).show()
+                                return@SwipeToConfirmButton
+                            }
+                            MainScope().launch {
+                                isLoading = true
+                                val data = TransactionConfirm(transactionId,otp.toIntOrNull())
+                                val message = viewModel.transaction(data)
+                                Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
+                                isLoading = false
+                            }
                         }
+                        if (isLoading) CenterLoadingView()
                     }
                 }
             } ?: CenterLoadingView()
@@ -206,15 +224,13 @@ fun OTPSection(otp: Int?) {
 }
 
 @Composable
-fun BuyerOTPInput() {
+fun BuyerOTPInput(otp:(String) -> Unit) {
     Text(
         text = "Enter OTP", style = MaterialTheme.typography.titleMedium, modifier = Modifier
             .fillMaxWidth()
             .padding(vertical = 4.dp)
     )
-    OtpInput(onOtpComplete = { otp ->
-        // Handle OTP completion
-    })
+    OtpInput(onOtpComplete = { otpValue -> otp(otpValue) })
 }
 
 fun openGoogleMapsAtLocation(context: Context, fromLat: Double, fromLng: Double) {

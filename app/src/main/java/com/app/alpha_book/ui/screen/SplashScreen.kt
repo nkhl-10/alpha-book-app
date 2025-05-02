@@ -26,29 +26,22 @@ fun SplashScreen(navController: NavController) {
 
     // Introduce a delay using LaunchedEffect
     LaunchedEffect(Unit) {
-        // Simulate a 2-second delay
         delay(2000)
-        // Navigate to the Login Screen
-
-
-        val isLogged = context.getBooleanData(USER.UserIsLogged.name,false)
-
-        if (isLogged){
-            navController.navigate(ScreenNavigationItem.Home.route) {
-                popUpTo(ScreenNavigationItem.Splash.route) { inclusive = true }
-            }
-        }else{
-            navController.navigate(ScreenNavigationItem.Login.route){
-                popUpTo(ScreenNavigationItem.Splash.route){inclusive=true}
-            }
+        val isLogged = context.getBooleanData(USER.UserIsLogged.name, false)
+        if (isLogged) navController.navigate(ScreenNavigationItem.Home.route) {
+            popUpTo(ScreenNavigationItem.Splash.route) { inclusive = true }
         }
-
+        else navController.navigate(ScreenNavigationItem.Login.route) {
+            popUpTo(ScreenNavigationItem.Splash.route) { inclusive = true }
+        }
     }
 
     // Design for the Splash Screen
     Box(
         contentAlignment = Alignment.Center,
-        modifier = Modifier.fillMaxSize().background(Color.White)
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Color.White)
     ) {
         Text(
             text = "Welcome to the App",
