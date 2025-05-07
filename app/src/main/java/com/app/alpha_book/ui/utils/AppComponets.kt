@@ -18,7 +18,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
 
-const val BASE_URL = "http://192.168.165.172:8000/api/"
+const val BASE_URL = "http://192.168.89.172:8000/api/"
 const val REGISTER_URL = "register"
 const val LOGIN_URL = "login"
 const val BOOKS_SEARCH_URL = "search"

@@ -1,6 +1,10 @@
 package com.app.alpha_book.ui.viewModel
 
 import android.util.Log
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.app.alpha_book.model.Address
@@ -16,6 +20,7 @@ import com.app.alpha_book.model.TransactionConfirm
 import com.app.alpha_book.model.User
 import com.app.alpha_book.remote.api.ApiInterface
 import com.app.alpha_book.ui.utils.ApiStatus
+import com.google.android.gms.maps.model.LatLng
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -51,6 +56,15 @@ class UserViewModel(private val api: ApiInterface) : ViewModel() {
     suspend fun loginUser(cred: LoginRequest): ApiResponse<TokenResponse> = api.login(cred)
 
     suspend fun buyBook(buyReqModel: BuyReqModel): ApiResponse<String> = api.buy(buyReqModel)
+
+
+    var latLng by mutableStateOf<LatLng?>(null)
+    var locationName by mutableStateOf<String?>(null)
+
+    fun updateLocation(latLng: LatLng,address: String) {
+        this.latLng = latLng
+        this.locationName = address
+    }
 
     fun uploadUserImage(userId: Int, file: File) {
         viewModelScope.launch {

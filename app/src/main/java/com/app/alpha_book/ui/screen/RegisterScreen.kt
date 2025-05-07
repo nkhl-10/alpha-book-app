@@ -158,9 +158,14 @@ fun RegisterScreen(navController: NavHostController) {
             Button(
                 onClick = {
                     errorMessage = null
-                    if (userName.isEmpty() || password.isEmpty() || phoneNo.isEmpty() || email.isEmpty()) {
-                        errorMessage = "Please enter details"
-                    } else {
+                    val emptyFields = mutableListOf<String>()
+                    if (userName.isEmpty()) emptyFields.add("Username")
+                    if (password.isEmpty()) emptyFields.add("Password")
+                    if (phoneNo.isEmpty()) emptyFields.add("Phone Number")
+                    if (email.isEmpty()) emptyFields.add("Email")
+                    if (emptyFields.isNotEmpty()) {
+                        errorMessage = "Please enter: ${emptyFields.joinToString(", ")}"
+                    }else {
                         isLoading = true
                         // Simulate login process
                         MainScope().launch {

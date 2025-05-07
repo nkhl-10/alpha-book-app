@@ -86,10 +86,9 @@ import java.io.File
 import java.io.FileOutputStream
 
 @Composable
-fun ProfileTabScreen(mainNavController: NavController) {
+fun ProfileTabScreen(viewModel: UserViewModel, mainNavController: NavController) {
+
     val context = LocalContext.current
-    val userApi: ApiInterface = ApiImpl()
-    val viewModel = remember { UserViewModel(userApi) }
     val user by viewModel.userState.collectAsState()
 
     LaunchedEffect(Unit) {
@@ -351,7 +350,7 @@ fun BooksPager(navController: NavController, id: Int) {
                         when {
                             bookList == null -> CenterLoadingView()
                             bookList!!.isEmpty() -> NoBookAvailable()
-                            else -> BookList(list = bookList.orEmpty()) { bookId ->
+                            else -> BookList(list = bookList.orEmpty(), viewModel, false) { bookId ->
                                 navController.navigate(ScreenNavigationItem.BookDetails.route + "/${bookId}/" + true)
                             }
                         }

@@ -18,7 +18,9 @@ class MainActivity : ComponentActivity() {
         setContent {
             AlphaBookTheme {
                 Surface(
-                    modifier = Modifier.fillMaxSize().statusBarsPadding(),
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .statusBarsPadding(),
                     color = MaterialTheme.colorScheme.background,
                 ) {
                     AppNavHost(navController = rememberNavController())
@@ -26,9 +28,5 @@ class MainActivity : ComponentActivity() {
             }
         }
     }
-    companion object{
-        var latitude: Double = 0.0
-        var longitude: Double = 0.0
 
-    }
 }

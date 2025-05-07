@@ -138,9 +138,14 @@ fun LoginScreen(navController: NavController) {
                     errorMessage = null
                     if (userName.isEmpty() || password.isEmpty()) {
                         errorMessage = "Please enter both username and password"
+                    }
+                    val emptyFields = mutableListOf<String>()
+                    if (userName.isEmpty()) emptyFields.add("Username")
+                    if (password.isEmpty()) emptyFields.add("Password") 
+                    if (emptyFields.isNotEmpty()) {
+                        errorMessage = "Please enter: ${emptyFields.joinToString(", ")}"
                     } else {
                         isLoading = true
-                        // Simulate login process
                         MainScope().launch {
                             isLoading = false
                             val response = viewModel.loginUser(LoginRequest(userName, password))

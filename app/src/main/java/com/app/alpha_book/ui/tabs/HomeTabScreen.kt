@@ -30,7 +30,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -43,16 +42,13 @@ import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.app.alpha_book.R
-import com.app.alpha_book.base.MainActivity.Companion.latitude
-import com.app.alpha_book.base.MainActivity.Companion.longitude
 import com.app.alpha_book.model.Book
 import com.app.alpha_book.model.Transaction
-import com.app.alpha_book.remote.api.ApiImpl
-import com.app.alpha_book.remote.api.ApiInterface
 import com.app.alpha_book.ui.navigation.ScreenNavigationItem
 import com.app.alpha_book.ui.utils.CenterLoadingView
 import com.app.alpha_book.ui.utils.NoBookAvailable
 import com.app.alpha_book.ui.viewModel.UserViewModel
+import com.google.android.gms.maps.model.LatLng
 import kotlin.math.asin
 import kotlin.math.cos
 import kotlin.math.pow
@@ -60,18 +56,16 @@ import kotlin.math.sin
 import kotlin.math.sqrt
 
 @Composable
-fun HomeTabScreen(mainNavController: NavController) {
-    val userApi: ApiInterface = ApiImpl()
-    val viewModel = remember { UserViewModel(userApi) }
-    val bookList by viewModel.bookList.collectAsState()
+fun HomeTabScreen(viewModel: UserViewModel, mainNavController: NavController) {
 
+    val bookList by viewModel.bookList.collectAsState()
     LaunchedEffect(Unit) { viewModel.getBookList() }
 
     Box(modifier = Modifier.fillMaxSize()) {
         when {
             bookList == null -> CenterLoadingView()
             bookList!!.isEmpty() -> NoBookAvailable()
-            else -> BookList(list = bookList.orEmpty()){ bookId->
+            else -> BookList(list = bookList.orEmpty(), viewModel, true) { bookId ->
                 mainNavController.navigate(ScreenNavigationItem.BookDetails.route + "/${bookId}/" + false)
             }
         }
@@ -80,20 +74,30 @@ fun HomeTabScreen(mainNavController: NavController) {
 
 
 @Composable
-fun BookList(list: List<Book>, click: (Int) -> Unit) {
+fun BookList(
+    list: List<Book>,
+    viewModel: UserViewModel,
+    isShowLocation: Boolean,
+    click: (Int) -> Unit
+) {
     LazyVerticalGrid(
         modifier = Modifier.fillMaxSize(),
         contentPadding = PaddingValues(10.dp),
         columns = GridCells.Fixed(2),
     ) {
         items(list) {
-            BookItems(it, click)
+            BookItems(it, isShowLocation, viewModel, click)
         }
     }
 }
 
 @Composable
-fun BookItems(books: Book, click: (Int) -> Unit) {
+fun BookItems(
+    books: Book,
+    isShowLocation: Boolean,
+    viewModel: UserViewModel,
+    click: (Int) -> Unit
+) {
     Card(
         modifier = Modifier
             .fillMaxSize()
@@ -102,12 +106,6 @@ fun BookItems(books: Book, click: (Int) -> Unit) {
         shape = RoundedCornerShape(6.dp),
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
     ) {
-        val bookLat = books.location?.latitude
-        val bookLon = books.location?.longitude
-
-        val distance = if (bookLat != null && bookLon != null) {
-            "%.2f".format(calculateDistanceFromUser(bookLat, bookLon)) + " km"
-        } else "Distance N/A"
         Column(
             horizontalAlignment = Alignment.Start
         ) {
@@ -127,7 +125,7 @@ fun BookItems(books: Book, click: (Int) -> Unit) {
                 )
             } else {
                 Image(
-                    painter = painterResource(id = R.drawable.placeholder), // ✅ Default placeholder
+                    painter = painterResource(id = R.drawable.placeholder),
                     contentDescription = "Default Book Image",
                     contentScale = ContentScale.Crop,
                     modifier = Modifier
@@ -159,39 +157,45 @@ fun BookItems(books: Book, click: (Int) -> Unit) {
                 modifier = Modifier.padding(4.dp),
                 maxLines = 1
             )
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Icon(
-                    imageVector = Icons.Default.LocationOn,
-                    contentDescription = "Distance Icon",
-                    modifier = Modifier.size(16.dp),
-                    tint = Color.Gray
-                )
-                Spacer(modifier = Modifier.width(4.dp))
-                Text(
-                    text = distance,
-                    style = MaterialTheme.typography.bodySmall,
-                    color = Color.Gray
-                )
+            if (isShowLocation) {
+                viewModel.latLng?.let {
+                    val bookLatLng = LatLng(books.location!!.latitude!!, books.location.longitude!!)
+                    val distance =
+                        "%.2f".format(calculateDistanceFromUser(bookLatLng, it)) + " km"
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Icon(
+                            imageVector = Icons.Default.LocationOn,
+                            contentDescription = "Distance Icon",
+                            modifier = Modifier.size(16.dp),
+                            tint = Color.Gray
+                        )
+                        Spacer(modifier = Modifier.width(4.dp))
+                        Text(
+                            text = distance,
+                            style = MaterialTheme.typography.bodySmall,
+                            color = Color.Gray
+                        )
+                    }
+                }
             }
 
         }
     }
 }
 
-fun calculateDistanceFromUser(lat2: Double, lon2: Double): Double {
-    val R = 6371 // Earth radius in km
+fun calculateDistanceFromUser(toLatLong: LatLng, fromLatLng: LatLng): Double {
+    val r = 6371 // Earth radius in km
 
-    latitude =23.0686
-        longitude=72.6536
+    val dLat = Math.toRadians(fromLatLng.latitude - toLatLong.latitude)
+    val dLon = Math.toRadians(fromLatLng.longitude - toLatLong.longitude)
 
-    val dLat = Math.toRadians(lat2 - latitude)
-    val dLon = Math.toRadians(lon2 - longitude)
-
-    val a = sin(dLat / 2).pow(2.0) + cos(Math.toRadians(latitude)) *
-            cos(Math.toRadians(lat2)) * sin(dLon / 2).pow(2.0)
+    val a = sin(dLat / 2).pow(2.0) +
+            cos(Math.toRadians(toLatLong.latitude)) *
+            cos(Math.toRadians(fromLatLng.latitude)) *
+            sin(dLon / 2).pow(2.0)
 
     val c = 2 * asin(sqrt(a))
-    return R * c
+    return r * c
 }
 
 @Composable
@@ -244,9 +248,18 @@ fun BookListRowItem(
                     .fillMaxWidth()
             ) {
                 Text(text = transaction.book.title, style = MaterialTheme.typography.titleMedium)
-                Text(text = "₹${transaction.book.price}", style = MaterialTheme.typography.bodyMedium)
-                Text(text = transaction.book.category?.name ?: "", style = MaterialTheme.typography.bodySmall)
-                Text(text = transaction.book.location?.city ?: "", style = MaterialTheme.typography.bodySmall)
+                Text(
+                    text = "₹${transaction.book.price}",
+                    style = MaterialTheme.typography.bodyMedium
+                )
+                Text(
+                    text = transaction.book.category?.name ?: "",
+                    style = MaterialTheme.typography.bodySmall
+                )
+                Text(
+                    text = transaction.book.location?.city ?: "",
+                    style = MaterialTheme.typography.bodySmall
+                )
             }
         }
     }

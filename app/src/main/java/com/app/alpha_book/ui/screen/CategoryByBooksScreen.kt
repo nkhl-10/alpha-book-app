@@ -69,7 +69,7 @@ fun CategoryByBooks(navController: NavController) {
                 when {
                     bookList == null -> CenterLoadingView()
                     bookList!!.isEmpty() -> NoBookAvailable()
-                    else -> BookList(list = bookList.orEmpty()){ bookId ->
+                    else -> BookList(list = bookList.orEmpty(), viewModel, true){ bookId ->
                         navController.navigate(ScreenNavigationItem.BookDetails.route + "/${bookId}/" + false)
                     }
                 }

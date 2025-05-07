@@ -10,14 +10,15 @@ import com.app.alpha_book.ui.tabs.AddBookTabScreen
 import com.app.alpha_book.ui.tabs.ExploreTabScreen
 import com.app.alpha_book.ui.tabs.HomeTabScreen
 import com.app.alpha_book.ui.tabs.ProfileTabScreen
+import com.app.alpha_book.ui.viewModel.UserViewModel
 
 
 @Composable
-fun HomeNavHost(navController: NavHostController,mainNavController: NavController,modifier: Modifier) {
+fun HomeNavHost(navController: NavHostController, mainNavController: NavController, viewModel: UserViewModel, modifier: Modifier) {
     NavHost(navController = navController, startDestination = HomeTabItem.Home.route, modifier = modifier) {
-        composable(HomeTabItem.Home.route) { HomeTabScreen(mainNavController) }
-        composable(HomeTabItem.Explore.route) { ExploreTabScreen(mainNavController) }
-        composable(HomeTabItem.Profile.route) { ProfileTabScreen(mainNavController) }
-        composable(HomeTabItem.AddBook.route) { AddBookTabScreen(navController,) }
+        composable(HomeTabItem.Home.route) { HomeTabScreen(viewModel,mainNavController) }
+        composable(HomeTabItem.Explore.route) { ExploreTabScreen(viewModel,mainNavController) }
+        composable(HomeTabItem.Profile.route) { ProfileTabScreen(viewModel,mainNavController) }
+        composable(HomeTabItem.AddBook.route) { AddBookTabScreen(viewModel,navController,) }
     }
 }

@@ -82,7 +82,7 @@ import com.google.accompanist.pager.rememberPagerState
 import kotlinx.coroutines.launch
 
 @Composable
-fun AddBookTabScreen(navController: NavController) {
+fun AddBookTabScreen(viewModel: UserViewModel, navController: NavController) {
 
     val bookTypes = listOf("resell", "new", "pdf", "free_book")
     val conditions = listOf("excellent", "very_good", "good", "average", "poor")
@@ -111,7 +111,6 @@ fun AddBookTabScreen(navController: NavController) {
     var addressError by remember { mutableStateOf(false) }
 
     val context = LocalContext.current
-    val viewModel = remember { UserViewModel(ApiImpl()) }
     val pagerState = rememberPagerState()
     val scope = rememberCoroutineScope()
     val addressList by viewModel.addressListState.collectAsState()
