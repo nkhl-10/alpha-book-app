@@ -75,6 +75,7 @@ import com.app.alpha_book.remote.api.ApiImpl
 import com.app.alpha_book.remote.api.ApiInterface
 import com.app.alpha_book.remote.sharedPreferences.USER
 import com.app.alpha_book.remote.sharedPreferences.getIntData
+import com.app.alpha_book.ui.components.getCurrentLocation
 import com.app.alpha_book.ui.navigation.ScreenNavigationItem
 import com.app.alpha_book.ui.utils.ApiStatus
 import com.app.alpha_book.ui.utils.CenterLoadingView
@@ -706,29 +707,5 @@ fun AddAddressDialog(showDialog: MutableState<Boolean>, viewModel: UserViewModel
                 }
             }
         )
-    }
-}
-
-
-fun getCurrentLocation(
-    context: Context,
-    fusedLocationClient: FusedLocationProviderClient,
-    onLocationReceived: (Location?) -> Unit
-) {
-    if (ContextCompat.checkSelfPermission(
-            context,
-            Manifest.permission.ACCESS_FINE_LOCATION
-        ) == PackageManager.PERMISSION_GRANTED
-    ) {
-        fusedLocationClient.lastLocation.addOnSuccessListener { location ->
-            Log.e("Location", "get location: $location")
-            onLocationReceived(location)
-        }.addOnFailureListener {
-            Log.e("Location", "Failed to get location: ${it.message}")
-            onLocationReceived(null)
-        }
-    } else {
-        Log.e("Location", "Location permission not granted")
-        onLocationReceived(null)
     }
 }

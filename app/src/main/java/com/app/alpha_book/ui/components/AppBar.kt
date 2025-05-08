@@ -6,7 +6,11 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.location.Geocoder
 import android.location.Location
+import android.location.LocationManager
+import android.os.Looper
+import android.provider.Settings
 import android.util.Log
+import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Row
@@ -39,6 +43,10 @@ import com.app.alpha_book.base.MainActivity
 import com.app.alpha_book.remote.sharedPreferences.clearAllData
 import com.app.alpha_book.ui.viewModel.UserViewModel
 import com.google.android.gms.location.FusedLocationProviderClient
+import com.google.android.gms.location.LocationAvailability
+import com.google.android.gms.location.LocationCallback
+import com.google.android.gms.location.LocationRequest
+import com.google.android.gms.location.LocationResult
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.maps.model.LatLng
 import java.io.IOException
@@ -122,6 +130,19 @@ fun getCurrentLocation(
     fusedLocationClient: FusedLocationProviderClient,
     onLocationReceived: (Location?) -> Unit
 ) {
+    val locationManager = context.getSystemService(Context.LOCATION_SERVICE) as LocationManager
+    val isEnabled = locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER) ||
+            locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER)
+
+    if (!isEnabled) {
+        Toast.makeText(context, "Please enable location services", Toast.LENGTH_LONG).show()
+        val intent = Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS)
+        intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
+        context.startActivity(intent)
+        onLocationReceived(null)
+        return
+    }
+
     if (ContextCompat.checkSelfPermission(
             context,
             Manifest.permission.ACCESS_FINE_LOCATION

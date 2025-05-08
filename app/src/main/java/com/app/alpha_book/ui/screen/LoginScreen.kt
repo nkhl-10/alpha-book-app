@@ -47,6 +47,8 @@ import com.app.alpha_book.remote.sharedPreferences.saveIntData
 import com.app.alpha_book.remote.sharedPreferences.saveStringData
 import com.app.alpha_book.ui.navigation.ScreenNavigationItem
 import com.app.alpha_book.ui.utils.ApiStatus
+import com.app.alpha_book.ui.utils.CenterLoadingView
+import com.app.alpha_book.ui.utils.FullScreenLoadingDialog
 import com.app.alpha_book.ui.viewModel.UserViewModel
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.launch
@@ -68,12 +70,14 @@ fun LoginScreen(navController: NavController) {
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .padding(16.dp), contentAlignment = Alignment.Center
+            .padding(16.dp)
     ) {
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center,
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier
+                .fillMaxWidth()
+                .align(Alignment.Center) // 👈 Ensure Column is also centered
         ) {
 
             // Username input field
@@ -118,7 +122,7 @@ fun LoginScreen(navController: NavController) {
                 Text(text = "Create Account", modifier = Modifier.clickable {
                     navController.navigate(ScreenNavigationItem.Register.route)
                 })
-               // Text(text = "Forget Password")
+                // Text(text = "Forget Password")
             }
             Spacer(modifier = Modifier.height(16.dp))
 
@@ -132,7 +136,6 @@ fun LoginScreen(navController: NavController) {
                 )
             }
 
-            // Login button
             Button(
                 onClick = {
                     errorMessage = null
@@ -141,13 +144,12 @@ fun LoginScreen(navController: NavController) {
                     }
                     val emptyFields = mutableListOf<String>()
                     if (userName.isEmpty()) emptyFields.add("Username")
-                    if (password.isEmpty()) emptyFields.add("Password") 
+                    if (password.isEmpty()) emptyFields.add("Password")
                     if (emptyFields.isNotEmpty()) {
                         errorMessage = "Please enter: ${emptyFields.joinToString(", ")}"
                     } else {
                         isLoading = true
                         MainScope().launch {
-                            isLoading = false
                             val response = viewModel.loginUser(LoginRequest(userName, password))
                             Log.i("TAG", "LoginScreenRes:$response ")
                             if (response.status == ApiStatus.SUCCESS.code) {
@@ -156,13 +158,15 @@ fun LoginScreen(navController: NavController) {
                                     context.saveIntData(USER.ID.name, id!!)
                                     context.saveStringData(USER.TOKEN.name, token.toString())
                                     navController.navigate(ScreenNavigationItem.Home.route) {
-                                        popUpTo(ScreenNavigationItem.Login.route) { inclusive = true }
+                                        popUpTo(ScreenNavigationItem.Login.route) {
+                                            inclusive = true
+                                        }
                                     }
                                 }
 
                             } else {
                                 isLoading = false
-                                errorMessage = response.message
+                                errorMessage = response.data?.error
                             }
 
 
@@ -173,11 +177,10 @@ fun LoginScreen(navController: NavController) {
                 Text(text = "Login", style = TextStyle(fontSize = 18.sp))
             }
 
-            // Loading Indicator
-            if (isLoading) {
-                Spacer(modifier = Modifier.height(16.dp))
-                CircularProgressIndicator()
-            }
+
         }
+
     }
+
+    if (isLoading) CenterLoadingView()
 }

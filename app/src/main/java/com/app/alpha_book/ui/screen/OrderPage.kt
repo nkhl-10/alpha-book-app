@@ -136,33 +136,37 @@ fun OrderScreen(navController: NavController) {
                         modifier = Modifier.fillMaxWidth(),
                         elevation = CardDefaults.cardElevation(4.dp)
                     ) {
-                        Row {
-                            val imageUrl = data?.images
-                            if (imageUrl!!.isNotEmpty()) {
-                                AsyncImage(
-                                    model = imageUrl[0].imageUrl,
-                                    contentDescription = "Book Image",
-                                    contentScale = ContentScale.Crop,
-                                    modifier = Modifier.size(100.dp),
-                                    placeholder = painterResource(R.drawable.placeholder),
-                                    error = painterResource(R.drawable.placeholder)
-                                )
-                            }
+                        //TODO
+                        data?.let { book ->
+                            Row {
+                                val imageUrl = book.images
+                                if (imageUrl!!.isNotEmpty()) {
+                                    AsyncImage(
+                                        model = imageUrl[0].imageUrl,
+                                        contentDescription = "Book Image",
+                                        contentScale = ContentScale.Crop,
+                                        modifier = Modifier.size(100.dp),
+                                        placeholder = painterResource(R.drawable.placeholder),
+                                        error = painterResource(R.drawable.placeholder)
+                                    )
+                                }
 
-                            Column(modifier = Modifier.padding(16.dp)) {
-                                Text(
-                                    text = "Book Title: ${data.title}",
-                                    fontSize = 18.sp,
-                                    fontWeight = FontWeight.Bold
-                                )
-                                Text(text = "Author: ${data.author}", fontSize = 16.sp)
-                                Text(
-                                    text = "Price: ₹${data.price}",
-                                    fontSize = 16.sp,
-                                    fontWeight = FontWeight.Bold
-                                )
+                                Column(modifier = Modifier.padding(16.dp)) {
+                                    Text(
+                                        text = "Book Title: ${data.title}",
+                                        fontSize = 18.sp,
+                                        fontWeight = FontWeight.Bold
+                                    )
+                                    Text(text = "Author: ${data.author}", fontSize = 16.sp)
+                                    Text(
+                                        text = "Price: ₹${data.price}",
+                                        fontSize = 16.sp,
+                                        fontWeight = FontWeight.Bold
+                                    )
+                                }
                             }
                         }
+
                     }
                 }
 

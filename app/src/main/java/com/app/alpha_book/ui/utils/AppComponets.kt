@@ -1,5 +1,7 @@
 package com.app.alpha_book.ui.utils
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -11,11 +13,13 @@ import androidx.compose.material.icons.rounded.Info
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 
 const val BASE_URL = "http://192.168.89.172:8000/api/"
@@ -66,7 +70,10 @@ enum class ApiStatus(val code: Int, val message: String) {
 fun CenterLoadingView() {
     Box(
         contentAlignment = Alignment.Center,
-        modifier = Modifier.fillMaxSize()
+        modifier = Modifier
+            .fillMaxSize()
+            .clickable(enabled = false) {}
+            .background(Color.Black.copy(alpha = 0.3f))
     ) {
         CircularProgressIndicator()
     }
@@ -86,8 +93,7 @@ fun NoBookAvailable() {
                     .align(Alignment.CenterHorizontally)
                     .clip(RoundedCornerShape(6.dp))
                     .size(36.dp)
-                    .padding(2.dp)
-                , onClick = { /*TODO*/ }) {
+                    .padding(2.dp), onClick = { /*TODO*/ }) {
                 Icon(Icons.Rounded.Info, contentDescription = "info")
             }
             Text(
@@ -95,5 +101,21 @@ fun NoBookAvailable() {
                 text = "No Books Data Available"
             )
         }
+    }
+}
+
+@Composable
+fun FullScreenLoadingDialog() {
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Color.Black.copy(alpha = 0.3f)) // translucent overlay
+            .clickable(enabled = false) {},            // block user touch
+        contentAlignment = Alignment.Center
+    ) {
+        CircularProgressIndicator(
+            color = MaterialTheme.colorScheme.primary,
+            strokeWidth = 4.dp
+        )
     }
 }

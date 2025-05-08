@@ -223,14 +223,8 @@ class UserViewModel(private val api: ApiInterface) : ViewModel() {
         }
     }
 
-    suspend fun transaction(data: TransactionConfirm): String {
-        return try {
-            val response = api.transactionConfirm(data)
-            response.message ?: "No message"
-        } catch (e: Exception) {
-            "Something went wrong"
-        }
-    }
+    suspend fun transaction(data: TransactionConfirm): ApiResponse<String?> = api.transactionConfirm(data)
+
 
 
     fun getBookList(bookId: Int?) {

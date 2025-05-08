@@ -45,7 +45,7 @@ fun SplashScreen(navController: NavController) {
     ) {
         Text(
             text = "Welcome to the App",
-            style = TextStyle(fontSize = 24.sp, fontWeight = FontWeight.Bold)
+            style = TextStyle(fontSize = 24.sp, fontWeight = FontWeight.Bold, color = Color.Black)
         )
     }
 }

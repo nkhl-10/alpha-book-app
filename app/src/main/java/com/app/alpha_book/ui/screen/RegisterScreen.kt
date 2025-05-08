@@ -169,8 +169,7 @@ fun RegisterScreen(navController: NavHostController) {
                         isLoading = true
                         // Simulate login process
                         MainScope().launch {
-                            delay(2000) // Simulate network delay
-                            isLoading = false
+                            delay(2000)
                             val user = User(
                                 email = email,
                                 password = password,
@@ -196,8 +195,7 @@ fun RegisterScreen(navController: NavHostController) {
             ) {
                 Text(text = "Register", style = TextStyle(fontSize = 18.sp))
             }
-
-            if (isLoading) CenterLoadingView()
         }
     }
+    if (isLoading) CenterLoadingView()
 }

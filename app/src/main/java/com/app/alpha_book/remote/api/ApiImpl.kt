@@ -24,6 +24,7 @@ import com.app.alpha_book.ui.utils.LOGIN_URL
 import com.app.alpha_book.ui.utils.REGISTER_URL
 import com.app.alpha_book.ui.utils.SEARCH_CATEGORY_URL
 import com.app.alpha_book.ui.utils.SOLD_BY_USER_BOOK
+import com.app.alpha_book.ui.utils.TRANSACTION_CONFIRM_URL
 import com.app.alpha_book.ui.utils.TRANSACTION_URL
 import com.app.alpha_book.ui.utils.UPLOAD_AVATAR_URL
 import com.app.alpha_book.ui.utils.UPLOAD_BOOKS_URL
@@ -200,9 +201,9 @@ class ApiImpl : BaseApiService(), ApiInterface {
         }
     }
 
-    override suspend fun transactionConfirm(transactionConfirm: TransactionConfirm): ApiResponse<String> {
+    override suspend fun transactionConfirm(transactionConfirm: TransactionConfirm): ApiResponse<String?> {
         return safeApiCall {
-            postRequest(TRANSACTION_URL,transactionConfirm)
+            postRequest(TRANSACTION_CONFIRM_URL,transactionConfirm)
         }
     }
 

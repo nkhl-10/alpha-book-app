@@ -28,6 +28,7 @@ import androidx.compose.material.LocalTextStyle
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.ArrowForward
+import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.Phone
 //noinspection UsingMaterialAndMaterial3Libraries
 import androidx.compose.material3.Scaffold
@@ -70,6 +71,7 @@ import com.app.alpha_book.remote.api.ApiImpl
 import com.app.alpha_book.remote.api.ApiInterface
 import com.app.alpha_book.ui.navigation.Argument
 import com.app.alpha_book.ui.tabs.BookListRow
+import com.app.alpha_book.ui.utils.ApiStatus
 import com.app.alpha_book.ui.utils.CenterLoadingView
 import com.app.alpha_book.ui.viewModel.UserViewModel
 import com.google.android.gms.maps.model.LatLng
@@ -144,9 +146,12 @@ fun TransactionScreen(navController: NavController) {
                             }
                             MainScope().launch {
                                 isLoading = true
-                                val data = TransactionConfirm(transactionId,otp.toIntOrNull())
+                                val data = TransactionConfirm(transactionId, otp.toIntOrNull())
                                 val message = viewModel.transaction(data)
-                                Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
+                                if (message.status ==ApiStatus.SUCCESS.code){
+                                    Toast.makeText(context, "Order are Complete", Toast.LENGTH_SHORT).show()
+                                    navController.popBackStack()
+                                }
                                 isLoading = false
                             }
                         }
@@ -167,15 +172,30 @@ fun SellerLocationView(
         location.latitude?.let { latitude ->
             location.longitude?.let { longitude ->
                 GoogleMapView(LatLng(latitude, longitude))
-                Text(
-                    text = "Start Map To Collect Book",
-                    color = MaterialTheme.colorScheme.primary,
+
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.Center,
                     modifier = Modifier
+                        .fillMaxWidth()
                         .clickable {
                             openGoogleMapsAtLocation(context, latitude, longitude)
                         }
                         .padding(top = 8.dp)
-                )
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.LocationOn,
+                        contentDescription = "Call",
+                        tint = Color.White,
+                        modifier = Modifier.padding(end = 8.dp)
+                    )
+                    Text(
+                        text = "Start Map To Collect Book",
+                        color = Color.White,
+                        style = MaterialTheme.typography.titleMedium
+                    )
+                }
+
             }
         }
     }
@@ -224,7 +244,7 @@ fun OTPSection(otp: Int?) {
 }
 
 @Composable
-fun BuyerOTPInput(otp:(String) -> Unit) {
+fun BuyerOTPInput(otp: (String) -> Unit) {
     Text(
         text = "Enter OTP", style = MaterialTheme.typography.titleMedium, modifier = Modifier
             .fillMaxWidth()

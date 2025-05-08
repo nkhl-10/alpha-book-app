@@ -208,7 +208,7 @@ fun BookListRowItem(
         modifier = Modifier
             .fillMaxWidth()
             .padding(6.dp)
-            .clickable {
+            .clickable(enabled = transaction.status == "pending") {
                 navController?.navigate(ScreenNavigationItem.TransactionScreen.route + "/${transaction.id}/" + "$isSellerPage")
             },
         shape = RoundedCornerShape(8.dp),
@@ -258,6 +258,10 @@ fun BookListRowItem(
                 )
                 Text(
                     text = transaction.book.location?.city ?: "",
+                    style = MaterialTheme.typography.bodySmall
+                )
+                Text(
+                    text = transaction.status,
                     style = MaterialTheme.typography.bodySmall
                 )
             }

@@ -60,5 +60,5 @@ interface ApiInterface {
 
     suspend fun searchCategories(query: String): ApiResponse<List<Category>>
 
-    suspend fun transactionConfirm(transactionConfirm: TransactionConfirm):ApiResponse<String>
+    suspend fun transactionConfirm(transactionConfirm: TransactionConfirm):ApiResponse<String?>
 }
