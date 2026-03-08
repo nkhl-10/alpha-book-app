@@ -22,7 +22,9 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 
-const val BASE_URL = "http://192.168.89.172:8000/api/"
+//const val BASE_URL = "http://192.168.89.172:8000/api/"
+const val BASE_URL = "https://nkhl.pythonanywhere.com/api/"
+
 const val REGISTER_URL = "register"
 const val LOGIN_URL = "login"
 const val BOOKS_SEARCH_URL = "search"
