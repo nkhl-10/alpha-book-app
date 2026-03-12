@@ -195,7 +195,7 @@ fun OrderScreen(navController: NavController) {
         },
         bottomBar = {
             if (bookId != book?.data?.sellerId) BuyButtons(
-                bookId = bookId ?: 0,
+                bookId = bookId,
                 amount = book?.data?.price ?: 0.0,
                 navController = navController,
                 selectedAddress = selectedAddress
@@ -241,7 +241,7 @@ fun BuyButtons(
                         isLoading = false
                         if (response.status == ApiStatus.CREATED.code) {
                             delay(2000)
-                            navController.navigate(ScreenNavigationItem.Home.route) {
+                            navController.navigate(ScreenNavigationItem.Home.route + "?tab=${com.app.alpha_book.ui.navigation.HomeTabItem.Profile.route}&profileTab=1") {
                                 popUpTo(ScreenNavigationItem.OrderPage.route) { inclusive = true }
                             }
                         } else {

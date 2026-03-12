@@ -22,7 +22,23 @@ fun AppNavHost(
 ) {
     NavHost(navController = navController, startDestination = startDestination) {
 
-        composable(ScreenNavigationItem.Home.route) { HomeScreen(navController) }
+        composable(
+            route = ScreenNavigationItem.Home.route + "?tab={tab}&profileTab={profileTab}",
+            arguments = listOf(
+                navArgument("tab") { 
+                    type = NavType.StringType
+                    defaultValue = HomeTabItem.Home.route
+                },
+                navArgument("profileTab") { 
+                    type = NavType.IntType
+                    defaultValue = 0 
+                }
+            )
+        ) { backStackEntry ->
+            val tab = backStackEntry.arguments?.getString("tab") ?: HomeTabItem.Home.route
+            val profileTab = backStackEntry.arguments?.getInt("profileTab") ?: 0
+            HomeScreen(navController, tab, profileTab)
+        }
 
         composable(ScreenNavigationItem.Login.route) { LoginScreen(navController) }
 

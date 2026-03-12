@@ -52,6 +52,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableDoubleStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -83,14 +84,18 @@ import com.app.alpha_book.ui.utils.NoBookAvailable
 import com.app.alpha_book.ui.viewModel.UserViewModel
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
+import kotlinx.coroutines.MainScope
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.launch
 import java.io.File
 import java.io.FileOutputStream
 
 @Composable
-fun ProfileTabScreen(viewModel: UserViewModel, mainNavController: NavController) {
+fun ProfileTabScreen(viewModel: UserViewModel, mainNavController: NavController, initialPage: Int = 0) {
 
     val context = LocalContext.current
     val user by viewModel.userState.collectAsState()
+    val coroutineScope = rememberCoroutineScope()
 
     LaunchedEffect(Unit) {
         val id = context.getIntData(USER.ID.name, 0)
@@ -105,7 +110,7 @@ fun ProfileTabScreen(viewModel: UserViewModel, mainNavController: NavController)
         if (user?.status == ApiStatus.SUCCESS.code) {
             user?.data?.let {
                 UserProfileCard(it, viewModel)
-                BooksPager(mainNavController, it.id)
+                BooksPager(mainNavController, it.id, initialPage)
             } ?: CenterLoadingView()
         } else CenterLoadingView()
 
@@ -322,15 +327,20 @@ fun EditProfileDialog(showDialogEditProfile: MutableState<Boolean>, viewModel: U
 }
 
 @Composable
-fun BooksPager(navController: NavController, id: Int) {
-    val pagerState = rememberPagerState(pageCount = { 3 })
+fun BooksPager(navController: NavController, id: Int, initialPage: Int = 0) {
+    val pagerState = rememberPagerState(initialPage = initialPage, pageCount = { 3 })
+    val coroutineScope = rememberCoroutineScope()
     val tabTitles = listOf("Your Books", "Ordered Books", "Sold Book")
     TabRow(selectedTabIndex = pagerState.currentPage) {
         tabTitles.forEachIndexed { index, title ->
             Tab(
                 text = { Text(title) },
                 selected = pagerState.currentPage == index,
-                onClick = { pagerState.getOffsetDistanceInPages(index) }
+                onClick = {
+                    coroutineScope.launch {
+                        pagerState.animateScrollToPage(index)
+                    }
+                }
             )
         }
     }

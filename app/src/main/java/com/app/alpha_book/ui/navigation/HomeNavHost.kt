@@ -14,11 +14,18 @@ import com.app.alpha_book.ui.viewModel.UserViewModel
 
 
 @Composable
-fun HomeNavHost(navController: NavHostController, mainNavController: NavController, viewModel: UserViewModel, modifier: Modifier) {
-    NavHost(navController = navController, startDestination = HomeTabItem.Home.route, modifier = modifier) {
+fun HomeNavHost(
+    navController: NavHostController, 
+    mainNavController: NavController, 
+    viewModel: UserViewModel, 
+    modifier: Modifier,
+    startDestination: String = HomeTabItem.Home.route,
+    profileTab: Int = 0
+) {
+    NavHost(navController = navController, startDestination = startDestination, modifier = modifier) {
         composable(HomeTabItem.Home.route) { HomeTabScreen(viewModel,mainNavController) }
         composable(HomeTabItem.Explore.route) { ExploreTabScreen(viewModel,mainNavController) }
-        composable(HomeTabItem.Profile.route) { ProfileTabScreen(viewModel,mainNavController) }
+        composable(HomeTabItem.Profile.route) { ProfileTabScreen(viewModel,mainNavController, profileTab) }
         composable(HomeTabItem.AddBook.route) { AddBookTabScreen(viewModel,navController,) }
     }
 }

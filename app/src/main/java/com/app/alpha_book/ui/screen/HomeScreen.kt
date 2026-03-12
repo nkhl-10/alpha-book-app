@@ -21,7 +21,11 @@ import com.app.alpha_book.ui.viewModel.UserViewModel
 
 @SuppressLint("UnusedMaterialScaffoldPaddingParameter", "UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
-fun HomeScreen(mainNav: NavController) {
+fun HomeScreen(
+    mainNav: NavController,
+    initialTab: String = HomeTabItem.Home.route,
+    profileTab: Int = 0
+) {
     val navControllerBottom = rememberNavController()
     // Observe the current backstack entry as state
     val navBackStackEntry by navControllerBottom.currentBackStackEntryAsState()
@@ -49,7 +53,9 @@ fun HomeScreen(mainNav: NavController) {
             navController = navControllerBottom,
             mainNavController = mainNav,
             viewModel =viewModel,
-            modifier = Modifier.padding(paddingValues)
+            modifier = Modifier.padding(paddingValues),
+            startDestination = initialTab,
+            profileTab = profileTab
         )
     }
 }
