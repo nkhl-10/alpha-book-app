@@ -23,7 +23,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 
 //const val BASE_URL = "http://192.168.89.172:8000/api/"
-const val BASE_URL = "https://21dipeshkhatri.pythonanywhere.com/api/"
+const val BASE_URL = "https://rahul21rahul.pythonanywhere.com/api/"
 
 const val REGISTER_URL = "register"
 const val LOGIN_URL = "login"
